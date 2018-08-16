@@ -20,16 +20,15 @@
 
         <jar destfile="${dist}/a1.jar" basedir="${out}">
             <manifest>
-                <attribute name="Main-Class" value="Modify" />
+                <attribute name="Main-Class" value="Main" />
             </manifest>
         </jar>
     </target>
 
     <target name="run" depends="jar">
-        <java jar="${dist}/modify.jar" fork="true">
+        <java jar="${dist}/a1.jar" fork="true">
             <arg value="input.txt"/>
             <arg value="output.txt"/>
-            <arg value="l"/>
         </java>
     </target>
 
