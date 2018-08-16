@@ -1,0 +1,39 @@
+<project name="comp3702-a1" default="run" basedir=".">
+    <description>
+        AI Assignment One
+    </description>
+
+    <property name="src" location="src"/>
+    <property name="tests" location="tests"/>
+    <property name="out" location="out"/>
+    <property name="dist" location="dist"/>
+
+    <target name="compile" description="compile the source">
+        <mkdir dir="${out}" />
+        <javac srcdir="${src}" destdir="${out}"/>
+    </target>
+
+    <target name="jar" depends="compile"
+            description="generate the jar file">
+
+        <mkdir dir="${dist}"/>
+
+        <jar destfile="${dist}/a1.jar" basedir="${out}">
+            <manifest>
+                <attribute name="Main-Class" value="Modify" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java jar="${dist}/modify.jar" fork="true">
+            <arg value="input.txt"/>
+            <arg value="output.txt"/>
+            <arg value="l"/>
+        </java>
+    </target>
+
+    <target name="clean" description="clean up">
+        <delete dir="${out}"/>
+    </target>
+</project>
