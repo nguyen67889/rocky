@@ -1,3 +1,7 @@
+package problem;
+
+import problem.Box;
+
 import java.awt.geom.Point2D;
 
 public class MovingObstacle extends Box {

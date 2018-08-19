@@ -1,3 +1,5 @@
+package problem;
+
 import java.io.IOException;
 
 public class Main {

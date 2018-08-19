@@ -1,19 +1,23 @@
+package problem;
 
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+
 
 /**
  * This class represents one of the rectangular obstacles in Assignment 1.
  * 
  * @author Sergiy Dudnikov
  */
-public class StaticObstacle {
+public abstract class Box {
 	/** Stores the obstacle as a Rectangle2D */
 	private Rectangle2D rect;
+	public Point2D pos;
+	private double width;
 
+	public Box() {
+
+	}
 	/**
 	 * Constructs an obstacle with the given (x,y) coordinates of the
 	 * bottom-left corner, as well as the width and height.
@@ -27,33 +31,21 @@ public class StaticObstacle {
 	 * @param h
 	 *            the height of the obstacle.
 	 */
-	public StaticObstacle(double x, double y, double w, double h) {
-		this.rect = new Rectangle2D.Double(x, y, w, h);
+	public Box(double x, double y, double w, double h) {
+	    this.rect = new Rectangle2D.Double(x, y, w, h);
 	}
 
-	/**
-	 * Constructs an obstacle from the representation used in the input file:
-	 * that is, the x- and y- coordinates of all of the corners of the
-	 * rectangle.
-	 * 
-	 * @param str
-	 */
-	public StaticObstacle(String str) {
-		Scanner s = new Scanner(str);
-		List<Double> xs = new ArrayList<Double>();
-		List<Double> ys = new ArrayList<Double>();
-		for (int i = 0; i < 2; i++) {
-			xs.add(s.nextDouble());
-			ys.add(s.nextDouble());
-		}
-		double xMin = Collections.min(xs);
-		double xMax = Collections.max(xs);
-		double yMin = Collections.min(ys);
-		double yMax = Collections.max(ys);
-		this.rect = new Rectangle2D.Double(xMin, yMin, xMax - xMin, yMax - yMin);
-		s.close();
+
+	public Box(Point2D pos, double width) {
+		this.pos = (Point2D) pos.clone();
+		this.width = width;
+//		this.isObstacle = isObstacle;
+        this.rect = new Rectangle2D.Double(pos.getX(), pos.getY(), width, width);
 	}
 
+    public Point2D getPos() {
+	    return pos;
+    }
 	/**
 	 * Returns a copy of the Rectangle2D representing this obstacle.
 	 * 
