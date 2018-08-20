@@ -25,5 +25,8 @@ public class RobotConfig {
         return angle;
     }
 
+    public boolean equals(RobotConfig r2) {
+        return (this.angle == r2.angle) && (this.pos.equals(r2.pos));
+    }
 
 }

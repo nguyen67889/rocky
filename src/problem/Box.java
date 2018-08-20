@@ -57,7 +57,7 @@ public abstract class Box {
 
 	/**
 	 * Returns a String representation of this obstacle.
-	 * 
+	 *
 	 * @return a String representation of this obstacle.
 	 */
 	public String toString() {

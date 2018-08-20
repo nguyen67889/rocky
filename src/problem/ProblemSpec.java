@@ -47,6 +47,21 @@ public class ProblemSpec {
     private List<List<Point2D>> movingBoxPath = new ArrayList<>();
     private List<List<Point2D>> movingObstaclePath = new ArrayList<>();
 
+    public double getRobotWidth() {return robotWidth;}
+
+    public List<StaticObstacle> getStaticObstacles() {return staticObstacles;}
+
+    public RobotConfig getInitialRobotConfig() { return initialRobotConfig; }
+
+	public List<Box> getMovingBoxes() { return movingBoxes; }
+
+	public List<Box> getMovingObstacles() { return movingObstacles; }
+
+	public List<RobotConfig> getRobotPath() { return robotPath;}
+
+	public List<List<Point2D>> getMovingBoxPath() { return movingBoxPath; }
+
+	public List<List<Point2D>> getMovingObstaclePath() { return movingObstaclePath; }
 
     /**
 	 * Loads a problem from a problem text file.
