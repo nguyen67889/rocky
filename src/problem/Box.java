@@ -43,6 +43,8 @@ public abstract class Box {
         this.rect = new Rectangle2D.Double(pos.getX(), pos.getY(), width, width);
 	}
 
+	public double getWidth() {return width;}
+
     public Point2D getPos() {
 	    return pos;
     }

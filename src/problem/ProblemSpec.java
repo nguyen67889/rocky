@@ -44,8 +44,8 @@ public class ProblemSpec {
     private int numStaticObstacles;
 
     private List<RobotConfig> robotPath = new ArrayList<>();
-    private List<List<Point2D>> movingBoxPath = new ArrayList<>();
-    private List<List<Point2D>> movingObstaclePath = new ArrayList<>();
+    private List<List<Box>> movingBoxPath = new ArrayList<>();
+    private List<List<Box>> movingObstaclePath = new ArrayList<>();
 
     public double getRobotWidth() {return robotWidth;}
 
@@ -59,9 +59,9 @@ public class ProblemSpec {
 
 	public List<RobotConfig> getRobotPath() { return robotPath;}
 
-	public List<List<Point2D>> getMovingBoxPath() { return movingBoxPath; }
+	public List<List<Box>> getMovingBoxPath() { return movingBoxPath; }
 
-	public List<List<Point2D>> getMovingObstaclePath() { return movingObstaclePath; }
+	public List<List<Box>> getMovingObstaclePath() { return movingObstaclePath; }
 
     /**
 	 * Loads a problem from a problem text file.
@@ -181,14 +181,15 @@ public class ProblemSpec {
                 robotPath.add(new RobotConfig(
                         new Point2D.Double(s.nextDouble(),s.nextDouble()),
                                 s.nextDouble()));
-                List<Point2D> movingBoxState = new ArrayList<>();
+                List<Box> movingBoxState = new ArrayList<>();
                 for (int j = 0; j < numMovingBoxes; j++) {
-                    movingBoxState.add(new Point2D.Double(s.nextDouble(),s.nextDouble()));
+                    movingBoxState.add(new MovingBox(new Point2D.Double(s.nextDouble(),s.nextDouble()), robotWidth));
                 }
                 movingBoxPath.add(movingBoxState);
-                List<Point2D> movingObstacleState = new ArrayList<>();
+                List<Box> movingObstacleState = new ArrayList<>();
                 for (int k = 0; k < numMovingObstacles; k++) {
-                    movingObstacleState.add(new Point2D.Double(s.nextDouble(),s.nextDouble()));
+                    movingObstacleState.add(new MovingObstacle(new Point2D.Double(s.nextDouble(),s.nextDouble()),
+                            movingObstacles.get(k).getWidth()));
                 }
                 movingObstaclePath.add(movingObstacleState);
                 s.close();
