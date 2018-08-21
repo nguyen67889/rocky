@@ -1,11 +1,6 @@
 package visualiser;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Shape;
-import java.awt.Stroke;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.*;
@@ -166,6 +161,7 @@ public class VisualisationPanel extends JComponent {
             g2.draw(box.getRect());
         }
 
+        // TODO: colour the boxes right
 //        Color color = g2.getColor();
 //        Stroke stroke = g2.getStroke();
 //        g2.setColor(Color.BLACK);
@@ -222,7 +218,7 @@ public class VisualisationPanel extends JComponent {
                         problemSetup.getMovingObstacles());
                 g2.setColor(Color.green);
                 paintState(g2, problemSetup.getInitialRobotConfig(),
-                        problemSetup.getMovingBoxes(),
+                        generateMovingBoxes(problemSetup.getMovingBoxEndPositions()),
                         problemSetup.getMovingObstacles());
             }
         } else {
@@ -230,4 +226,17 @@ public class VisualisationPanel extends JComponent {
             paintState(g2, currentRobotConfig, currentMovingBoxes, currentMovingObstacles);
         }
     }
+
+    public List<Box> generateMovingBoxes(List<Point2D> movingBoxCentres) {
+        List<Box> movingBoxes = new ArrayList<>();
+        Point2D centre;
+        for (int i = 0; i < movingBoxCentres.size(); i++) {
+            centre = movingBoxCentres.get(i);
+            movingBoxes.add(new MovingBox(
+                    centre,	problemSetup.getRobotWidth()));
+        }
+        return movingBoxes;
+    }
+
+
 }

@@ -557,7 +557,7 @@ public class Visualiser {
     }
 
     public void updateMaximum() {
-        int maximum = vp.getProblemSetup().getPath().size() - 1;
+        int maximum = vp.getProblemSetup().getRobotPath().size() - 1;
         manualSlider.setMaximum(maximum);
         updateTickSpacing();
     }
