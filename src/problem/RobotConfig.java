@@ -25,6 +25,22 @@ public class RobotConfig {
         return angle;
     }
 
+    public float getX1(double robotWidth) {
+        return (float) (pos.getX() - Math.cos(angle) * robotWidth);
+    }
+
+    public float getX2(double robotWidth) {
+        return (float) (pos.getX() + Math.cos(angle) * robotWidth);
+    }
+
+    public float getY1(double robotWidth) {
+        return (float) (pos.getY() - Math.sin(angle) * robotWidth);
+    }
+
+    public float getY2(double robotWidth) {
+        return (float) (pos.getY() + Math.sin(angle) * robotWidth);
+    }
+
     public boolean equals(RobotConfig r2) {
         return (this.angle == r2.angle) && (this.pos.equals(r2.pos));
     }

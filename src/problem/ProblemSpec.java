@@ -1,5 +1,6 @@
 package problem;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -39,6 +40,8 @@ public class ProblemSpec {
     private List<Box> movingBoxes;
     private List<Box> movingObstacles;
 
+    private List<Point2D> movingBoxEndPositions;
+
     private int numMovingBoxes;
     private int numMovingObstacles;
     private int numStaticObstacles;
@@ -62,6 +65,12 @@ public class ProblemSpec {
 	public List<List<Box>> getMovingBoxPath() { return movingBoxPath; }
 
 	public List<List<Box>> getMovingObstaclePath() { return movingObstaclePath; }
+
+	public List<Point2D> getMovingBoxEndPositions() { return movingBoxEndPositions; }
+
+	public boolean getProblemLoaded() { return problemLoaded; }
+
+	public boolean getSolutionLoaded() { return solutionLoaded; }
 
     /**
 	 * Loads a problem from a problem text file.
@@ -101,7 +110,7 @@ public class ProblemSpec {
 			s.close();
 
 			// this section covers moving boxes
-			List<Point2D> movingBoxEndPositions = new ArrayList<Point2D>();
+			movingBoxEndPositions = new ArrayList<Point2D>();
 			movingBoxes = new ArrayList<>();
 			for (int i = 0; i < numMovingBoxes; i++) {
 				line = input.readLine();
@@ -210,7 +219,5 @@ public class ProblemSpec {
             input.close();
         }
     }
-
-
 
 }
