@@ -197,6 +197,13 @@ public class VisualisationPanel extends JComponent {
             }
         }
 
+        List<Box> movingBoxEndPositions = generateMovingBoxes(problemSetup.getMovingBoxEndPositions());
+        g2.setColor(Color.green);
+        for (Box box : movingBoxEndPositions) {
+            Shape transformed = transform.createTransformedShape(box
+                    .getRect());
+            g2.draw(transformed);
+        }
 
         g2.setStroke(new BasicStroke(2));
         if (!animating) {
