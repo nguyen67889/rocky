@@ -7,6 +7,7 @@ import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sound.sampled.Line;
 import javax.swing.JComponent;
 import javax.swing.Timer;
 import javax.swing.plaf.nimbus.State;
@@ -151,24 +152,23 @@ public class VisualisationPanel extends JComponent {
                                               rc.getY1(problemSetup.getRobotWidth()),
                                               rc.getX2(problemSetup.getRobotWidth()),
                                               rc.getY2(problemSetup.getRobotWidth()));
-        g2.draw(robot);
+        g2.setColor(Color.black);
+        g2.setStroke(new BasicStroke(2));
+        g2.draw(transform.createTransformedShape(robot));
+
         // Draw Moving Boxes
+        g2.setColor(Color.blue);
+        g2.draw(robot);
         for (Box box : mb) {
-            g2.draw(box.getRect());
-        }
-        // Draw Moving Obstacles
-        for (Box box : mo) {
-            g2.draw(box.getRect());
+            g2.draw(transform.createTransformedShape(box.getRect()));
         }
 
-        // TODO: colour the boxes right
-//        Color color = g2.getColor();
-//        Stroke stroke = g2.getStroke();
-//        g2.setColor(Color.BLACK);
-//        g2.setStroke(new BasicStroke(1));
-//        g2.draw(r);
-//        g2.setColor(color);
-//        g2.setStroke(stroke);
+        // Draw Moving Obstacles
+        g2.setColor(Color.orange);
+        g2.draw(robot);
+        for (Box box : mo) {
+            g2.draw(transform.createTransformedShape(box.getRect()));
+        }
 
     }
 
@@ -193,9 +193,10 @@ public class VisualisationPanel extends JComponent {
             for (StaticObstacle obs : obstacles) {
                 Shape transformed = transform.createTransformedShape(obs
                         .getRect());
-                g2.fill(transformed);
+                g2.draw(transformed);
             }
         }
+
 
         g2.setStroke(new BasicStroke(2));
         if (!animating) {
@@ -212,14 +213,14 @@ public class VisualisationPanel extends JComponent {
                 g2.setColor(Color.green);
                 paintState(g2, robotConfigPath.get(lastIndex), movingBoxPath.get(lastIndex), movingObstaclePath.get(lastIndex));
             } else {
-                g2.setColor(Color.blue);
+//                g2.setColor(Color.blue);
                 paintState(g2, problemSetup.getInitialRobotConfig(),
                         problemSetup.getMovingBoxes(),
                         problemSetup.getMovingObstacles());
-                g2.setColor(Color.green);
-                paintState(g2, problemSetup.getInitialRobotConfig(),
-                        generateMovingBoxes(problemSetup.getMovingBoxEndPositions()),
-                        problemSetup.getMovingObstacles());
+//                g2.setColor(Color.green);
+//                paintState(g2, problemSetup.getInitialRobotConfig(),
+//                        generateMovingBoxes(problemSetup.getMovingBoxEndPositions()),
+//                        problemSetup.getMovingObstacles());
             }
         } else {
             g2.setColor(Color.blue);

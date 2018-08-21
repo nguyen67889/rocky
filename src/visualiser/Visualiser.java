@@ -99,7 +99,7 @@ public class Visualiser {
                 vis.loadSolution(new File(args[1]));
             }
         }
-        frame.setSize(700, 766);
+        frame.setSize(500, 566);
         frame.setLocation(300, 100);
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
