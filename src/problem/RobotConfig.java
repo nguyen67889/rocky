@@ -25,8 +25,13 @@ public class RobotConfig {
         return angle;
     }
 
-    public boolean equals(RobotConfig r2) {
-        return (this.angle == r2.angle) && (this.pos.equals(r2.pos));
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof  RobotConfig) {
+            RobotConfig r = (RobotConfig) o;
+            return (this.angle == r.angle) && (this.pos.equals(r.pos));
+        }
+        return false;
     }
 
 }
