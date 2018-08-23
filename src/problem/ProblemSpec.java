@@ -38,6 +38,7 @@ public class ProblemSpec {
 
     private List<Box> movingBoxes;
     private List<Box> movingObstacles;
+    private List<Point2D> movingBoxEndPositions;
 
     private int numMovingBoxes;
     private int numMovingObstacles;
@@ -62,6 +63,14 @@ public class ProblemSpec {
 	public List<List<Box>> getMovingBoxPath() { return movingBoxPath; }
 
 	public List<List<Box>> getMovingObstaclePath() { return movingObstaclePath; }
+
+	public boolean getProblemLoaded() { return problemLoaded; }
+
+	public boolean getSolutionLoaded() {return solutionLoaded; }
+
+	public List<Point2D> getMovingBoxEndPositions() { return movingBoxEndPositions; }
+
+	{}
 
     /**
 	 * Loads a problem from a problem text file.
