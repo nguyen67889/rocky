@@ -99,8 +99,8 @@ public class Visualiser {
                 vis.loadSolution(new File(args[1]));
             }
         }
-        frame.setSize(500, 566);
-        frame.setLocation(300, 100);
+        frame.setSize(700, 766);
+        frame.setLocation(300, 20);
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
@@ -491,7 +491,8 @@ public class Visualiser {
             samplingSpinner.setVisible(true);
         } else {
             infoLabel
-                    .setText("Displaying the problem: blue = initial, green = goal, red = obstacle. Base is circled.");
+                    .setText("Problem: black = robot, blue = moving boxes, orange = moving obstacles, " +
+                            "red = static obstacles, green = goals.");
             samplingSpinner.setVisible(false);
         }
     }
