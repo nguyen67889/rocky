@@ -30,37 +30,49 @@ public class ProblemSpec {
     /** The static obstacles */
 	private List<StaticObstacle> staticObstacles;
 
-	// new vals
+    /** The static obstacles */
 	private double robotWidth;
 
 	/** The initial configuration */
 	private RobotConfig initialRobotConfig;
 
-    private List<Box> movingBoxes;
+	/** An array of moving boxes and obstacles */	
+	private List<Box> movingBoxes;
     private List<Box> movingObstacles;
 
+	/** The number of each type of obstacle **/	
     private int numMovingBoxes;
     private int numMovingObstacles;
-    private int numStaticObstacles;
-
-    private List<RobotConfig> robotPath = new ArrayList<>();
-    private List<List<Box>> movingBoxPath = new ArrayList<>();
+	private int numStaticObstacles;
+	
+	/** The path of the robot, moving boxes, and moving obstacles **/		
+	private List<RobotConfig> robotPath = new ArrayList<>();
+	private List<List<Box>> movingBoxPath = new ArrayList<>();
     private List<List<Box>> movingObstaclePath = new ArrayList<>();
 
-    public double getRobotWidth() {return robotWidth;}
+	
+	/** Returns the width of the robot **/		
+	public double getRobotWidth() {return robotWidth;}
 
+	/** Returns a list of static obstacles **/		
     public List<StaticObstacle> getStaticObstacles() {return staticObstacles;}
 
+	/** Returns the initial robot config **/		
     public RobotConfig getInitialRobotConfig() { return initialRobotConfig; }
 
+	/** Returns a list of moving boxes **/		
 	public List<Box> getMovingBoxes() { return movingBoxes; }
 
+	/** Returns a list of moving obstacles **/		
 	public List<Box> getMovingObstacles() { return movingObstacles; }
 
+	/** Returns the robot path **/		
 	public List<RobotConfig> getRobotPath() { return robotPath;}
 
+	/** Returns the moving box path **/		
 	public List<List<Box>> getMovingBoxPath() { return movingBoxPath; }
 
+	/** Returns the moving obstacle path **/		
 	public List<List<Box>> getMovingObstaclePath() { return movingObstaclePath; }
 
     /**
@@ -94,7 +106,6 @@ public class ProblemSpec {
 			line = input.readLine();
 			lineNo++;
 			s = new Scanner(line);
-			// int numObstacles = s.nextInt();
 			numMovingBoxes = s.nextInt();
 			numMovingObstacles = s.nextInt();
 			numStaticObstacles = s.nextInt();
@@ -151,7 +162,15 @@ public class ProblemSpec {
 		}
 	}
 
-
+    /**
+	 * Loads a solution from a solution text file.
+	 * 
+	 * @param filename
+	 *            the path of the text file to load.
+	 * @throws IOException
+	 *             if the text file doesn't exist or doesn't meet the assignment
+	 *             specifications.
+	 */
     public void loadSolution(String filename) throws IOException {
         solutionLoaded = false;
         if (!problemLoaded) {
@@ -170,9 +189,6 @@ public class ProblemSpec {
             s = new Scanner(line);
             int p = s.nextInt();
             s.close();
-
-            // initial configuration
-
 
             for (int i = 0; i < p; i++) {
                 line = input.readLine();
