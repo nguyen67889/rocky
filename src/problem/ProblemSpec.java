@@ -39,7 +39,6 @@ public class ProblemSpec {
 
     private List<Box> movingBoxes;
     private List<Box> movingObstacles;
-
     private List<Point2D> movingBoxEndPositions;
 
     private int numMovingBoxes;

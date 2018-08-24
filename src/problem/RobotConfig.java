@@ -41,8 +41,12 @@ public class RobotConfig {
         return (float) (pos.getY() + Math.sin(angle) * robotWidth / 2);
     }
 
-    public boolean equals(RobotConfig r2) {
-        return (this.angle == r2.angle) && (this.pos.equals(r2.pos));
+    public boolean equals(Object o) {
+        if (o instanceof  RobotConfig) {
+            RobotConfig r = (RobotConfig) o;
+            return (this.angle == r.angle) && (this.pos.equals(r.pos));
+        }
+        return false;
     }
 
 }
