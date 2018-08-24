@@ -126,22 +126,29 @@ public class ProblemSpec {
 				line = input.readLine();
 				lineNo++;
 				s = new Scanner(line);
+				// The box creation function requires the bottom left corner.
 				movingBoxes.add(new MovingBox(
-					new Point2D.Double(s.nextDouble(), s.nextDouble()),	robotWidth));
+					new Point2D.Double(s.nextDouble()-robotWidth/2,
+										s.nextDouble()-robotWidth/2),	robotWidth));
 				movingBoxEndPositions.add(
-					new Point2D.Double(s.nextDouble(), s.nextDouble()));
+					new Point2D.Double(s.nextDouble()-robotWidth/2,
+										s.nextDouble()-robotWidth/2));
 				s.close();
 			}
 
             movingObstacles = new ArrayList<>();
 
-            // this section covers moving staticObstacles (still boxes)
+            // this section covers moving Obstacles (still boxes)
 			for (int i = 0; i < numMovingObstacles; i++) {
 				line = input.readLine();
 				lineNo++;
 				s = new Scanner(line);
+				// The box creation take the bottom left corner
+				double x = s.nextDouble();
+				double y = s.nextDouble();
+				double w = s.nextDouble();
 				movingObstacles.add(new MovingObstacle(
-					new Point2D.Double(s.nextDouble(), s.nextDouble()),	s.nextDouble()));
+					new Point2D.Double(x-w/2, y-w/2),	w));
 				s.close();
 			}
 			
@@ -207,12 +214,15 @@ public class ProblemSpec {
                                 s.nextDouble()));
                 List<Box> movingBoxState = new ArrayList<>();
                 for (int j = 0; j < numMovingBoxes; j++) {
-                    movingBoxState.add(new MovingBox(new Point2D.Double(s.nextDouble(),s.nextDouble()), robotWidth));
+                    movingBoxState.add(new MovingBox(new Point2D.Double(s.nextDouble() - robotWidth/2,
+																		s.nextDouble() - robotWidth/2),
+																		robotWidth));
                 }
                 movingBoxPath.add(movingBoxState);
                 List<Box> movingObstacleState = new ArrayList<>();
                 for (int k = 0; k < numMovingObstacles; k++) {
-                    movingObstacleState.add(new MovingObstacle(new Point2D.Double(s.nextDouble(),s.nextDouble()),
+                    movingObstacleState.add(new MovingObstacle(new Point2D.Double(s.nextDouble() - movingObstacles.get(k).getWidth() / 2,
+							s.nextDouble() - movingObstacles.get(k).getWidth() / 2),
                             movingObstacles.get(k).getWidth()));
                 }
                 movingObstaclePath.add(movingObstacleState);

@@ -147,14 +147,11 @@ public class VisualisationPanel extends JComponent {
         if ((rc == null)||(mb == null)||(mo == null)) {
             return;
         }
-        // Draw Robot
+        // Define Robot
         Line2D.Float robot = new Line2D.Float(rc.getX1(problemSetup.getRobotWidth()),
-                                              rc.getY1(problemSetup.getRobotWidth()),
-                                              rc.getX2(problemSetup.getRobotWidth()),
-                                              rc.getY2(problemSetup.getRobotWidth()));
-        g2.setColor(Color.black);
-        g2.setStroke(new BasicStroke(2));
-        g2.draw(transform.createTransformedShape(robot));
+                rc.getY1(problemSetup.getRobotWidth()),
+                rc.getX2(problemSetup.getRobotWidth()),
+                rc.getY2(problemSetup.getRobotWidth()));
 
         // Draw Moving Boxes
         g2.setColor(Color.blue);
@@ -169,6 +166,11 @@ public class VisualisationPanel extends JComponent {
         for (Box box : mo) {
             g2.draw(transform.createTransformedShape(box.getRect()));
         }
+
+        // Draw Robot last so it's on top
+        g2.setColor(Color.black);
+        g2.setStroke(new BasicStroke(2));
+        g2.draw(transform.createTransformedShape(robot));
 
     }
 
