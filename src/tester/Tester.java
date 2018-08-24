@@ -3,29 +3,50 @@ import problem.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.*;
 
 public class Tester {
+    /** Maximum step size for a primitive step*/
     public static final double MAX_BASE_STEP = 0.001;
+    /** Maximum error*/
     public static final double MAX_ERROR = 0.0001;
 
-
+    /** Remembers the specifications of the problem. */
     private ProblemSpec ps;
+    /** Maximum angle error when checking if robot is parallel to axis */
     private double angleError;
-    private Box[] coupledBox;
-    private int[] pushDirection;
 
     public void Tester(ProblemSpec ps){
         this.ps = ps;
         angleError = Math.asin(MAX_ERROR/(ps.getRobotWidth()/2));
-        coupledBox = new Box[ps.getRobotPath().size()];
-        pushDirection = new int[ps.getRobotPath().size()];
-        for(int i = 0; i < ps.getRobotPath().size(); i++) {
-            coupledBox[i] = null;
-            pushDirection[i] = -1;
-        }
     }
 
+    /**
+     * Read problem and solution. Runs tests.
+     * @param args input file name for problem and solution
+     */
+    public void main(String[] args) {
+        try {
+            ps.loadProblem(args[0]);
+        } catch (IOException e1) {
+            System.out.println("FAILED: Invalid problem file");
+            System.out.println(e1.getMessage());
+            return;
+        }
+        try {
+            ps.loadSolution(args[1]);
+        } catch (IOException e1) {
+            System.out.println("FAILED: Invalid solution file");
+            System.out.println(e1.getMessage());
+            return;
+        }
+        testSolution();
+    }
+
+    /**
+     *  Runs all tests.
+     */
     public void testSolution() {
         boolean pass = true;
         if (ps.getProblemLoaded() && ps.getSolutionLoaded()) {
@@ -40,6 +61,10 @@ public class Tester {
         }
     }
 
+    /**
+     * Count the amount of goals reached.
+     * @return amount of goals reached.
+     */
     public int countGoals() {
         List<Box> finalState = ps.getMovingBoxPath().get(ps.getMovingBoxPath().size() - 1);
         int count = 0;
@@ -51,23 +76,37 @@ public class Tester {
         return count;
     }
 
+    /**
+     * Creates a new Rectangle2D that is grown by delta in each direction
+     * compared to the given Rectangle2D.
+     *
+     * @param rect
+     *            the Rectangle2D to expand.
+     * @param delta
+     *            the amount to expand by.
+     * @return a Rectangle2D expanded by delta in each direction.
+     */
     public Rectangle2D grow(Rectangle2D rect, double delta) {
         return new Rectangle2D.Double(rect.getX() - delta, rect.getY() - delta,
                 rect.getWidth() + 2 * delta, rect.getHeight() + 2 * delta);
     }
 
+    /**
+     * Test whether the solution starts with the initial state
+     * @return true of false
+     */
     public boolean testInitialFirst(){
         System.out.println("Test Initial State");
         if (hasInitialFirst()) {
             System.out.println("Passed.");
             return true;
         } else {
-            System.out.println("FAILED: Solution path must start at initial state.");
+            System.out.println("Solution path must start at initial state.");
             return false;
         }
     }
 
-    public boolean hasInitialFirst() {
+    private boolean hasInitialFirst() {
         if (!ps.getInitialRobotConfig().equals(ps.getRobotPath().get(0))) {
             return false;
         }
@@ -90,6 +129,11 @@ public class Tester {
         return true;
     }
 
+    /**
+     * Test whether each step of the solution is strictly less than primitive step size
+     * @return true or false
+     */
+
     public boolean testStepSize() {
         System.out.println("Test Step Size");
         List<RobotConfig> robotPath = ps.getRobotPath();
@@ -110,6 +154,13 @@ public class Tester {
         return pass;
     }
 
+    /**
+     * Checks if the step size of the robot is valid from r1 to r2
+     * @param r1 previous robot state
+     * @param r2 current robot state
+     * @return true or false
+     */
+
     public boolean isValidStep(RobotConfig r1, RobotConfig r2) {
         if (r1.getPos().distance(r2.getPos()) > MAX_BASE_STEP) {
             return false;
@@ -120,18 +171,31 @@ public class Tester {
         return true;
     }
 
+    /**
+     * Get the first point of the robot
+     * @param r the robot
+     * @return A Point2D representing the first point.
+     */
     public Point2D getPoint2(RobotConfig r) {
         double x = r.getPos().getX() + Math.cos(r.getOrientation()) * ps.getRobotWidth() * 0.5;
         double y = r.getPos().getY() + Math.sin(r.getOrientation()) * ps.getRobotWidth() * 0.5;
         return new Point2D.Double(x,y);
     }
-
+    /**
+     * Get the second point of the robot
+     * @param r the robot
+     * @return A Point2D representing the second point.
+     */
     public Point2D getPoint1(RobotConfig r) {
         double x = r.getPos().getX() - Math.cos(r.getOrientation()) * ps.getRobotWidth() * 0.5;
         double y = r.getPos().getY() - Math.sin(r.getOrientation()) * ps.getRobotWidth() * 0.5;
         return new Point2D.Double(x,y);
     }
 
+    /**
+     * Test whether each push in the solution is valid.
+     * @return true or false
+     */
     public boolean testPushedBox() {
         System.out.println("Test pushed objects");
         boolean pass = true;
@@ -172,13 +236,22 @@ public class Tester {
         return pass;
     }
 
-    public boolean testPushValidity(int direction, RobotConfig oldrobot, RobotConfig newRobot, Box oldBox, Box newBox) {
+    /**
+     * Check if pushing from a given state to another state is valid.
+     * @param direction the supposed direction of the push
+     * @param oldRobot previous robot state
+     * @param newRobot current robot state
+     * @param oldBox previous movable object state
+     * @param newBox current movable object state
+     * @return true or false
+     */
+    public boolean testPushValidity(int direction, RobotConfig oldRobot, RobotConfig newRobot, Box oldBox, Box newBox) {
         if (direction == -1) {
             return false;
         }
 
-        double robotdy = newRobot.getPos().getY() - oldrobot.getPos().getY();
-        double robotdx = newRobot.getPos().getX() - oldrobot.getPos().getX();
+        double robotdy = newRobot.getPos().getY() - oldRobot.getPos().getY();
+        double robotdx = newRobot.getPos().getX() - oldRobot.getPos().getX();
         double boxdy = newBox.getPos().getY() - oldBox.getPos().getY();
         double boxdx = newBox.getPos().getX() - oldBox.getPos().getX();
 
@@ -212,6 +285,14 @@ public class Tester {
         return true;
     }
 
+    /**
+     * Return the index of the pushed object from given previous state and current state
+     * @param oldState A list of Box of all movable object from previous state
+     * @param currentState A list of Box of all movable object from current state
+     * @return -2 if multiple moved object found,
+     *          -1 if no moved object found,
+     *          index of moved object otherwise.
+     */
     public int hasPushedBox(List<Box> oldState, List<Box> currentState) {
         int pushedBox = -1;
         for(int i = 0; i < oldState.size(); i++) {
@@ -225,10 +306,37 @@ public class Tester {
         return pushedBox;
     }
 
+    /**
+     * Normalises an angle to the range (2pi, 4pi]
+     *
+     * @param angle
+     *            the angle to normalise.
+     * @return the normalised angle.
+     */
+    public double normaliseAngle(double angle) {
+        while (angle <= 0) {
+            angle += 2 * Math.PI;
+        }
+        while (angle > 2 * Math.PI) {
+            angle -= 2 * Math.PI;
+        }
+        return angle;
+    }
+
+    /**
+     * Check if a given robot and a given movable object are coupled together (ready to push)
+     * @param r robot state
+     * @param b movable object
+     * @return -1 if not coupled,
+     *          1 if robot on bottom of box
+     *          2 if robot on left of box
+     *          3 if robot on top of box
+     *          4 if robot on right of box
+     */
     public int isCoupled(RobotConfig r, Box b) {
         Point2D p1,p2;
 
-        double angle = (r.getOrientation() + Math.PI * 2) % (Math.PI * 2) + Math.PI * 2;
+        double angle = normaliseAngle(r.getOrientation());
         boolean horizontal;
         if (angle >= Math.PI * 2 - angleError && angle <= Math.PI * 2 + angleError) {
             p1 = getPoint1(r);
@@ -278,6 +386,10 @@ public class Tester {
         }
     }
 
+    /**
+     * Test if any step in solution contains collision
+     * @return true if passed
+     */
     public boolean testCollision(){
         System.out.println("Test collision:");
         boolean pass = true;
@@ -296,6 +408,12 @@ public class Tester {
         return pass;
     }
 
+    /**
+     * Check if a given state contains collision
+     * @param r state of robot
+     * @param MovingObjects state of all movable objects
+     * @return true if no collision
+     */
     public boolean hasCollision(RobotConfig r, List<Box> MovingObjects) {
         boolean coupled = false;
         Line2D robotLine = new Line2D.Double(getPoint1(r), getPoint2(r));
