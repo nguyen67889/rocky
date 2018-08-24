@@ -19,7 +19,7 @@ public class Tester {
 
     public void Tester(ProblemSpec ps){
         this.ps = ps;
-        angleError = Math.asin(MAX_ERROR/(ps.getRobotWidth()/2));
+        angleError = Math.asin((MAX_ERROR/2)/(ps.getRobotWidth()/2)) * 2;
     }
 
     /**
