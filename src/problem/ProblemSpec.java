@@ -39,6 +39,7 @@ public class ProblemSpec {
 	/** An array of moving boxes and obstacles */	
 	private List<Box> movingBoxes;
     private List<Box> movingObstacles;
+    private List<Point2D> movingBoxEndPositions;
 
 	/** The number of each type of obstacle **/	
     private int numMovingBoxes;
@@ -74,6 +75,14 @@ public class ProblemSpec {
 
 	/** Returns the moving obstacle path **/		
 	public List<List<Box>> getMovingObstaclePath() { return movingObstaclePath; }
+
+	public boolean getProblemLoaded() { return problemLoaded; }
+
+	public boolean getSolutionLoaded() {return solutionLoaded; }
+
+	public List<Point2D> getMovingBoxEndPositions() { return movingBoxEndPositions; }
+
+	{}
 
     /**
 	 * Loads a problem from a problem text file.

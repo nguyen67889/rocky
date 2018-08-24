@@ -82,4 +82,13 @@ public abstract class Box {
 	public String toString() {
 		return rect.toString();
 	}
+
+	@Override
+    public boolean equals(Object o){
+	    if (o instanceof Box) {
+	        Box b = (Box) o;
+	        return b.getRect().equals((rect));
+        }
+	    return false;
+    }
 }
