@@ -17,7 +17,7 @@ public class Tester {
     /** Maximum angle error when checking if robot is parallel to axis */
     private double angleError;
 
-    public void Tester(ProblemSpec ps){
+    public Tester(ProblemSpec ps){
         this.ps = ps;
         angleError = Math.asin((MAX_ERROR/2)/(ps.getRobotWidth()/2)) * 2;
     }
@@ -26,7 +26,8 @@ public class Tester {
      * Read problem and solution. Runs tests.
      * @param args input file name for problem and solution
      */
-    public void main(String[] args) {
+    public static void main(String[] args) {
+        ProblemSpec ps = new ProblemSpec();
         try {
             ps.loadProblem(args[0]);
         } catch (IOException e1) {
@@ -41,7 +42,8 @@ public class Tester {
             System.out.println(e1.getMessage());
             return;
         }
-        testSolution();
+        Tester tester = new Tester(ps);
+        tester.testSolution();
     }
 
     /**
