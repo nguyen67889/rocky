@@ -1,11 +1,57 @@
 package solution;
 
 import problem.ProblemSpec;
+import problem.RobotConfig;
 import tester.Tester;
 
-import java.io.IOException;
+import java.awt.geom.Point2D;
+import java.io.*;
+import java.util.List;
 
 public class Solution {
+
+    private ProblemSpec problem;
+
+    private List<RobotConfig> robotPositions;
+    private List<List<Point2D>> boxPositions;
+
+    public Solution(ProblemSpec problem) {
+        this.problem = problem;
+    }
+
+    public void saveSolution(String filename) throws IOException {
+        BufferedWriter input = new BufferedWriter(new FileWriter(filename));
+
+        if (robotPositions.size() != boxPositions.size()) {
+            System.err.println("Saving Solution: Robot positions do not match box positions");
+            System.exit(2);
+        }
+
+        int boxCount = boxPositions.get(0).size();
+        RobotConfig robot;
+        List<Point2D> boxes;
+
+        input.write(robotPositions.size());
+        for (int i = 0; i < robotPositions.size(); i++) {
+            if (boxCount != boxPositions.get(i).size()) {
+                System.err.println("Saving Solution: Box position #" + i + " does not match box count");
+                System.exit(3);
+            }
+
+            robot = robotPositions.get(i);
+            boxes = boxPositions.get(i);
+
+            StringBuilder box = new StringBuilder();
+            for (Point2D position : boxes) {
+                box.append(" " + position.getX() + " " + position.getY());
+            }
+
+            input.write(robot.getPos().getX() + " " + robot.getPos().getY()
+                    + " " + robot.getOrientation() + box.toString());
+
+        }
+    }
+
     public static void main(String[] args) {
         if (args.length != 2) {
             System.err.println("Invalid Usage: java ProgramName inputFileName outputFileName");
