@@ -1,6 +1,7 @@
 package solution;
 
 import problem.ProblemSpec;
+import tester.Tester;
 
 import java.io.IOException;
 
@@ -20,9 +21,21 @@ public class Solution {
             System.err.println("FileIO Error: could not load input file");
         }
 
+        test(problemSpec);
+    }
 
+    private static void test(ProblemSpec problemSpec) {
+        Tester tester = new Tester(problemSpec);
 
-        System.out.println(inputFile);
-        System.out.println(outputFile);
+        if (problemSpec.getProblemLoaded() && problemSpec.getSolutionLoaded()) {
+            System.out.println("Has initial state: " + tester.testInitialFirst());
+            System.out.println("Correct step sizes: " + tester.testStepSize());
+            System.out.println("Has no collisions: " + tester.testCollision());
+            System.out.println("All pushes valid: " + tester.testPushedBox());
+        } else if (problemSpec.getProblemLoaded()) {
+            System.out.println("Problem has been loaded but no solution generated");
+        } else {
+            System.out.println("Problem has not been loaded correctly");
+        }
     }
 }
