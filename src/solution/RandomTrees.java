@@ -7,7 +7,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RandomTrees {
 
     private final static int MIN_DIST = 1; //change these numbers
-    private final static int MAX_DIST = 5;
+    private final static int MAX_DIST = 2;
 
     private final static int ITERATIONS = 100;
 
@@ -24,32 +24,32 @@ public class RandomTrees {
                 continue;
             }
             if(node.left == null) {
-                double x = node.x - ThreadLocalRandom.current().nextDouble(MIN_DIST, MAX_DIST);
+                double x = node.x - ThreadLocalRandom.current().nextInt(MIN_DIST, MAX_DIST);
                 double y = node.y;
                 node.left = new Node(x, y);
                 node.left.right = node;
                 newNodes.add(node.left);
             }
             if(node.right == null) {
-                double x = node.x + ThreadLocalRandom.current().nextDouble(MIN_DIST, MAX_DIST);
+                double x = node.x + ThreadLocalRandom.current().nextInt(MIN_DIST, MAX_DIST);
                 double y = node.y;
                 node.right = new Node(x, y);
                 node.right.left = node;
-                newNodes.add(node.left);
+                newNodes.add(node.right);
             }
             if(node.above == null) {
                 double x = node.x;
-                double y = node.y + ThreadLocalRandom.current().nextDouble(MIN_DIST, MAX_DIST);
+                double y = node.y + ThreadLocalRandom.current().nextInt(MIN_DIST, MAX_DIST);
                 node.above = new Node(x, y);
                 node.above.below = node;
-                newNodes.add(node.left);
+                newNodes.add(node.above);
             }
             if(node.below == null) {
                 double x = node.x;
-                double y = node.y - ThreadLocalRandom.current().nextDouble(MIN_DIST, MAX_DIST);
+                double y = node.y - ThreadLocalRandom.current().nextInt(MIN_DIST, MAX_DIST);
                 node.below = new Node(x, y);
                 node.below.above = node;
-                newNodes.add(node.left);
+                newNodes.add(node.below);
             }
             newNodes.add(node);
         }
