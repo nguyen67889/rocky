@@ -1,12 +1,3 @@
-How to use Parser:
-1.run main methods in problem.Main with arguments: inputfilename
-2.enjoy object ProblemSpec
+# COMP3702 Assignment One
 
-Validity checker implemented in tester.Tester
-How to use:
-1.run main methods with arguments: inputfilename outputfilename
-
-How to use Visualiser
-1.run main methods in visualiser.Visualiser.
-
-Last update: 2018/8/24 6 pm
+Contributors: Henry O'Brien, Emily Bennett and Brae Webb
