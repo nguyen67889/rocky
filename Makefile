@@ -9,10 +9,12 @@ report:
 
 bundle:
 	mkdir -p ./dist/
+	cp logo.ico ./dist/favicon.ico
 	cd src/; zip -r ../dist/a1-comp3702-44354006-44394918-44341800.zip *
 
 docs:
 	javadoc -sourcepath ./src -d ./docs -subpackages .;
+	cp logo.ico ./docs/favicon.ico
 
 clean:
 	rm -r ./out/ ./dist/ ./docs/ ./report/report.pdf
