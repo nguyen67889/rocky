@@ -7,6 +7,7 @@
     <property name="tests" location="tests"/>
     <property name="out" location="out"/>
     <property name="dist" location="dist"/>
+    <property name="main" value="solution.Solution"/>
 
     <target name="compile" description="compile the source">
         <mkdir dir="${out}" />
@@ -20,7 +21,7 @@
 
         <jar destfile="${dist}/a1.jar" basedir="${out}">
             <manifest>
-                <attribute name="Main-Class" value="Main" />
+                <attribute name="Main-Class" value="${main}" />
             </manifest>
         </jar>
     </target>
