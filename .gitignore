@@ -342,3 +342,4 @@ TSWLatexianTemp*
 
 *.pdf
 docs/
+dist/
