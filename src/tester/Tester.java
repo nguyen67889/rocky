@@ -436,11 +436,27 @@ public class Tester {
      * @return true if no, false if yes
      */
     public boolean testGapSliding(RobotConfig r, List<Box> movingObjects) {
-        if (!isAxisAligned(r)) {
+        double angle = normaliseAngle(r.getOrientation());
+        Point2D p1,p2,r1,r2;
+        p1 = getPoint1(r);
+        p2 = getPoint2(r);
+        if (angle >= Math.PI * 2 - angleError && angle <= Math.PI * 2 + angleError) {
+            r1 = new Point2D.Double(p1.getX() + MAX_ERROR, p1.getY());
+            r2 = new Point2D.Double(p2.getX() - MAX_ERROR, p2.getY());
+        } else if (angle >= Math.PI * 2.5 - angleError && angle <= Math.PI * 2.5 + angleError) {
+            r1 = new Point2D.Double(p1.getX(), p1.getY() + MAX_ERROR);
+            r2 = new Point2D.Double(p2.getX(), p2.getY() - MAX_ERROR);
+        } else if (angle >= Math.PI * 3 - angleError && angle <= Math.PI * 3 + angleError) {
+            r1 = new Point2D.Double(p2.getX() + MAX_ERROR, p2.getY());
+            r2 = new Point2D.Double(p1.getX() - MAX_ERROR, p1.getY());
+        } else if (angle >= Math.PI * 3.5 - angleError && angle <= Math.PI * 3.5 + angleError) {
+            r1 = new Point2D.Double(p2.getX(), p2.getY() + MAX_ERROR);
+            r2 = new Point2D.Double(p1.getX(), p1.getY() - MAX_ERROR);
+        } else {
             return true;
         }
         int count = 0;
-        Line2D robotLine = new Line2D.Double(getPoint1(r), getPoint2(r));
+        Line2D robotLine = new Line2D.Double(r1, r2);
         for (Box b : movingObjects) {
             Rectangle2D collisionBox = grow(b.getRect(), MAX_ERROR);
             if (collisionBox.intersectsLine(robotLine)) {
