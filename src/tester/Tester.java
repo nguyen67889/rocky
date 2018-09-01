@@ -323,7 +323,7 @@ public class Tester {
         while (angle > 2 * Math.PI) {
             angle -= 2 * Math.PI;
         }
-        return angle;
+        return angle + 2 * Math.PI;
     }
 
     /**
