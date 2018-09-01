@@ -1,6 +1,5 @@
 package solution;
 
-import com.google.common.graph.*;
 import problem.*;
 
 import java.awt.geom.Point2D;
@@ -88,7 +87,7 @@ public class GridGraph {
         System.out.println(sb.toString());
     }
 
-    public List<Point2D> getCoordPath(List<Node> path) {
+    public List<Point2D> getCoordPath(List<Node> path, double width) {
         List<Point2D> result = new ArrayList<>();
         for(int i = 0; i < path.size() - 1; i++) {
             Node node = path.get(i);
@@ -97,22 +96,22 @@ public class GridGraph {
             node.y = round(node.y, 4);
             nextNode.x = round(nextNode.x, 4);
             nextNode.y = round(nextNode.y, 4);
-            Point2D thisPt = new Point2D.Double(node.x, node.y);
+            Point2D thisPt = new Point2D.Double(node.x + width/2, node.y + width/2);
             result.add(thisPt);
-            while(thisPt.getX() < nextNode.x) {
-                thisPt = new Point2D.Double(thisPt.getX() + 0.001, node.y);
+            while(thisPt.getX() < nextNode.x + width/2) {
+                thisPt = new Point2D.Double(thisPt.getX() + 0.001, node.y + width/2);
                 result.add(thisPt);
             }
-            while(thisPt.getX() > nextNode.x) {
-                thisPt = new Point2D.Double(thisPt.getX() - 0.001, node.y);
+            while(thisPt.getX() > nextNode.x + width/2) {
+                thisPt = new Point2D.Double(thisPt.getX() - 0.001, node.y + width/2);
                 result.add(thisPt);
             }
-            while(thisPt.getY() < nextNode.y) {
-                thisPt = new Point2D.Double(node.x, thisPt.getY() + 0.001);
+            while(thisPt.getY() < nextNode.y + width/2) {
+                thisPt = new Point2D.Double(node.x + width/2, thisPt.getY() + 0.001);
                 result.add(thisPt);
             }
-            while(thisPt.getY() > nextNode.y) {
-                thisPt = new Point2D.Double(node.x, thisPt.getY() - 0.001);
+            while(thisPt.getY() > nextNode.y + width/2) {
+                thisPt = new Point2D.Double(node.x + width/2, thisPt.getY() - 0.001);
                 result.add(thisPt);
             }
         }
@@ -142,7 +141,7 @@ public class GridGraph {
         Point2D g = spec.getMovingBoxEndPositions().get(0);
         List<Node> path = gg.aStar(b, g.getX(), g.getY());
         gg.printGraphPath(path);
-        List<Point2D> coords = gg.getCoordPath(path);
+        List<Point2D> coords = gg.getCoordPath(path, b.getWidth());
         System.out.println(coords);
 
         StringBuilder sb = new StringBuilder();
@@ -158,7 +157,7 @@ public class GridGraph {
             sb.append(round(spec.getMovingObstacles().get(0).getPos().getX(), 4) + " ");
             sb.append(round(spec.getMovingObstacles().get(0).getPos().getY(), 4) + "\n");
         }
-        //System.out.println(sb.toString());
+        System.out.println(sb.toString());
     }
 
     public class Node {
@@ -222,8 +221,16 @@ public class GridGraph {
         }
 
         private int heuristicCost(Node start, Node goal) {
-            return (int)(Math.abs(start.x - goal.x) +
+            int heuristic = (int)(Math.abs(start.x - goal.x) +
                     Math.abs(start.y - goal.y));
+            Set<Node> neighbours = getNeighbours(start);
+            heuristic += 4 - neighbours.size();
+            for(Node node : neighbours) {
+                if(getNeighbours(node).size() < 4) {
+                    heuristic += 1;
+                }
+            }
+            return heuristic;
         }
 
         private Set<Node> getNeighbours(Node node) {

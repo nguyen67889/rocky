@@ -343,3 +343,6 @@ TSWLatexianTemp*
 *.pdf
 docs/
 dist/
+.idea/
+output/
+*.iml
