@@ -258,7 +258,7 @@ public class Tester {
         double boxdy = newBox.getPos().getY() - oldBox.getPos().getY();
         double boxdx = newBox.getPos().getX() - oldBox.getPos().getX();
 
-        if (robotdy - boxdy > MAX_ERROR || robotdx - boxdx > MAX_ERROR) {
+        if (Math.abs(robotdy - boxdy) > MAX_ERROR || Math.abs(robotdx - boxdx) > MAX_ERROR) {
             return false;
         }
         int actualDirection = 0;
@@ -267,13 +267,13 @@ public class Tester {
         if (boxdy > MAX_ERROR) {
             actualDirection = 1;
             moved++;
-        } else if (boxdy < MAX_ERROR) {
+        } else if (boxdy < -MAX_ERROR) {
             actualDirection = 3;
             moved++;
         } else if (boxdx > MAX_ERROR) {
             actualDirection = 2;
             moved++;
-        } else if (boxdx < MAX_ERROR) {
+        } else if (boxdx < -MAX_ERROR) {
             actualDirection = 4;
             moved++;
         }
@@ -317,10 +317,10 @@ public class Tester {
      * @return the normalised angle.
      */
     public double normaliseAngle(double angle) {
-        while (angle <= 0) {
+        while (angle < 0) {
             angle += 2 * Math.PI;
         }
-        while (angle > 2 * Math.PI) {
+        while (angle >= 2 * Math.PI) {
             angle -= 2 * Math.PI;
         }
         return angle + 2 * Math.PI;
