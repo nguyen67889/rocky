@@ -440,31 +440,60 @@ public class Tester {
         Point2D p1,p2,r1,r2;
         p1 = getPoint1(r);
         p2 = getPoint2(r);
-        if (angle >= Math.PI * 2 - angleError && angle <= Math.PI * 2 + angleError) {
+        boolean horizontal;
+        if (angle >= Math.PI * 4 - angleError || angle <= Math.PI * 2 + angleError) {
             r1 = new Point2D.Double(p1.getX() + MAX_ERROR, p1.getY());
             r2 = new Point2D.Double(p2.getX() - MAX_ERROR, p2.getY());
+            horizontal = true;
         } else if (angle >= Math.PI * 2.5 - angleError && angle <= Math.PI * 2.5 + angleError) {
             r1 = new Point2D.Double(p1.getX(), p1.getY() + MAX_ERROR);
             r2 = new Point2D.Double(p2.getX(), p2.getY() - MAX_ERROR);
+            horizontal = false;
         } else if (angle >= Math.PI * 3 - angleError && angle <= Math.PI * 3 + angleError) {
             r1 = new Point2D.Double(p2.getX() + MAX_ERROR, p2.getY());
             r2 = new Point2D.Double(p1.getX() - MAX_ERROR, p1.getY());
+            horizontal = true;
         } else if (angle >= Math.PI * 3.5 - angleError && angle <= Math.PI * 3.5 + angleError) {
             r1 = new Point2D.Double(p2.getX(), p2.getY() + MAX_ERROR);
             r2 = new Point2D.Double(p1.getX(), p1.getY() - MAX_ERROR);
+            horizontal = false;
         } else {
             return true;
         }
         int count = 0;
         Line2D robotLine = new Line2D.Double(r1, r2);
+        List<Box> collidedBox = new ArrayList<Box>();
         for (Box b : movingObjects) {
             Rectangle2D collisionBox = grow(b.getRect(), MAX_ERROR);
             if (collisionBox.intersectsLine(robotLine)) {
                 count++;
+                collidedBox.add(b);
             }
         }
         if (count > 1) {
-            return false;
+            return isAtSameSide(robotLine, collidedBox, horizontal);
+        }
+        return true;
+    }
+
+    private boolean isAtSameSide(Line2D line, List<Box> boxes, boolean horizontal) {
+        double prevSide = 0;
+        for (Box box: boxes) {
+            if (horizontal) {
+                double side = box.getPos().getY() - line.getY1();
+                if (prevSide == 0) {
+                    prevSide = side;
+                } else if (prevSide * side < 0) {
+                    return false;
+                }
+            } else {
+                double side = box.getPos().getX() - line.getX1();
+                if (prevSide == 0) {
+                    prevSide = side;
+                } else if (prevSide * side < 0) {
+                    return false;
+                }
+            }
         }
         return true;
     }
