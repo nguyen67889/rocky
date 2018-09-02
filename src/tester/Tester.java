@@ -71,7 +71,7 @@ public class Tester {
         List<Box> finalState = ps.getMovingBoxPath().get(ps.getMovingBoxPath().size() - 1);
         int count = 0;
         for (int i = 0; i < finalState.size(); i++){
-            if (finalState.get(i).getPos() == ps.getMovingBoxEndPositions().get(i)) {
+            if (finalState.get(i).getPos().distance(ps.getMovingBoxEndPositions().get(i)) <= MAX_ERROR) {
                 count++;
             }
         }
@@ -480,14 +480,14 @@ public class Tester {
         double prevSide = 0;
         for (Box box: boxes) {
             if (horizontal) {
-                double side = box.getPos().getY() - line.getY1();
+                double side = box.getPos().getY() + MAX_ERROR - line.getY1();
                 if (prevSide == 0) {
                     prevSide = side;
                 } else if (prevSide * side < 0) {
                     return false;
                 }
             } else {
-                double side = box.getPos().getX() - line.getX1();
+                double side = box.getPos().getX() + MAX_ERROR - line.getX1();
                 if (prevSide == 0) {
                     prevSide = side;
                 } else if (prevSide * side < 0) {
