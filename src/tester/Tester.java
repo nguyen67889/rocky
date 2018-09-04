@@ -123,7 +123,7 @@ public class Tester {
         List<Box> movingObstacles = ps.getMovingObstacles();
         List<List<Box>> movingObstaclePath = ps.getMovingObstaclePath();
         for (int i = 0; i < movingObstacles.size(); i++) {
-            if (!movingObstacles.get(i).getPos().equals(movingObstaclePath.get(i).get(0).getPos())) {
+            if (!movingObstacles.get(i).getPos().equals(movingObstaclePath.get(0).get(i).getPos())) {
                 return false;
             }
         }
