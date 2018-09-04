@@ -479,21 +479,16 @@ public class Tester {
     private boolean isAtSameSide(Line2D line, List<Box> boxes, boolean horizontal) {
         double prevSide = 0;
         for (Box box: boxes) {
+            double side;
             if (horizontal) {
-                double side = box.getPos().getY() + MAX_ERROR - line.getY1();
-                if (prevSide == 0) {
-                    prevSide = side;
-                } else if (prevSide * side < 0) {
-                    return false;
-                }
+                side = box.getPos().getY() + MAX_ERROR - line.getY1();
             } else {
-                double side = box.getPos().getX() + MAX_ERROR - line.getX1();
-                if (prevSide == 0) {
-                    prevSide = side;
-                } else if (prevSide * side < 0) {
-                    return false;
-                }
+                side = box.getPos().getX() + MAX_ERROR - line.getX1();
             }
+            if (prevSide * side < 0) {
+                return false;
+            }
+            prevSide = side;
         }
         return true;
     }
