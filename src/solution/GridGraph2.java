@@ -5,31 +5,35 @@ import problem.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class GridGraph {
+public class GridGraph2 {
     private final static double AREA_WIDTH = 1; //width of the area
     private final static double DIVIDER = 20; //number of nodes across
-    private double nodeWidth; //width of a single node
+    private BigDecimal nodeWidth; //width of a single node
 
     private Node[][] grid;
 
-    GridGraph(ProblemSpec spec) {
-        nodeWidth = AREA_WIDTH/DIVIDER;
+    GridGraph2(ProblemSpec spec) {
+        nodeWidth = round(AREA_WIDTH/DIVIDER, 4);
         int numNodesHeight;
         int numNodesWidth = numNodesHeight = (int)DIVIDER;
 
         grid = new Node[numNodesHeight][numNodesWidth];
         for(int i = 0; i < numNodesHeight; i++) {
             for(int j = 0; j < numNodesWidth; j++) {
-                double x = nodeWidth*j;
-                double y = nodeWidth*i;
+                BigDecimal x = nodeWidth.multiply(BigDecimal.valueOf(j));
+                BigDecimal y = nodeWidth.multiply(BigDecimal.valueOf(i));
 
                 grid[i][j] = new Node(null, x, y);
 
                 for(StaticObstacle o : spec.getStaticObstacles()) {
                     Rectangle2D rect = o.getRect();
-                    if(rect.intersects(x, y, nodeWidth, nodeWidth)) {
+                    if(rect.intersects(x.doubleValue(), y.doubleValue(),
+                            nodeWidth.doubleValue(), nodeWidth.doubleValue())) {
                         grid[i][j] = null;
                     }
                 }
@@ -38,7 +42,7 @@ public class GridGraph {
                 boxes.addAll(spec.getMovingObstacles());
                 for(Box b : boxes) {
                     Rectangle2D rect = b.getRect();
-                    if(rect.intersects(x, y, nodeWidth, nodeWidth)) {
+                    if(rect.intersects(x.doubleValue(), y.doubleValue(), nodeWidth.doubleValue(), nodeWidth.doubleValue())) {
                         grid[i][j] = new Node(b, x, y);
                     }
                 }
@@ -87,31 +91,29 @@ public class GridGraph {
         System.out.println(sb.toString());
     }
 
-    public List<Point2D> getCoordPath(List<Node> path, double width) {
+    public List<Point2D> getCoordPath(List<Node> path, Point2D goal, Box myBox) {
         List<Point2D> result = new ArrayList<>();
-        for(int i = 0; i < path.size() - 1; i++) {
-            Node node = path.get(i);
-            Node nextNode = path.get(i + 1);
-            node.x = round(node.x, 4);
-            node.y = round(node.y, 4);
-            nextNode.x = round(nextNode.x, 4);
-            nextNode.y = round(nextNode.y, 4);
-            Point2D thisPt = new Point2D.Double(node.x + width/2, node.y + width/2);
-            result.add(thisPt);
-            while(thisPt.getX() < nextNode.x + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX() + 0.001, node.y + width/2);
+        double width = myBox.getWidth();
+        double x = myBox.getPos().getX() + width/2;
+        double y = myBox.getPos().getY() + width/2;
+        Point2D thisPt = new Point2D.Double(x, y);
+        result.add(thisPt);
+        path.add(new Node(null, round(goal.getX(), 4), round(goal.getY(), 4)));
+        for(Node node : path) {
+            while(thisPt.getX() < node.x.doubleValue() + width/2) {
+                thisPt = new Point2D.Double(thisPt.getX() + 0.001, thisPt.getY());
                 result.add(thisPt);
             }
-            while(thisPt.getX() > nextNode.x + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX() - 0.001, node.y + width/2);
+            while(thisPt.getX() > node.x.doubleValue() + width/2) {
+                thisPt = new Point2D.Double(thisPt.getX() - 0.001, thisPt.getY());
                 result.add(thisPt);
             }
-            while(thisPt.getY() < nextNode.y + width/2) {
-                thisPt = new Point2D.Double(node.x + width/2, thisPt.getY() + 0.001);
+            while(thisPt.getY() < node.y.doubleValue() + width/2) {
+                thisPt = new Point2D.Double(thisPt.getX(), thisPt.getY() + 0.001);
                 result.add(thisPt);
             }
-            while(thisPt.getY() > nextNode.y + width/2) {
-                thisPt = new Point2D.Double(node.x + width/2, thisPt.getY() - 0.001);
+            while(thisPt.getY() > node.y.doubleValue() + width/2) {
+                thisPt = new Point2D.Double(thisPt.getX(), thisPt.getY() - 0.001);
                 result.add(thisPt);
             }
         }
@@ -119,53 +121,55 @@ public class GridGraph {
         return result;
     }
 
-    public static double round(double value, int places) {
+    private static BigDecimal round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
         BigDecimal bd = new BigDecimal(value);
         bd = bd.setScale(places, BigDecimal.ROUND_HALF_UP);
-        return bd.doubleValue();
+        return bd;
     }
 
     public List<Node> aStar(Box box, double xGoal, double yGoal) {
-        return new AStar(box, xGoal, yGoal).run();
+        return new AStar(box, round(xGoal, 4), round(yGoal, 4)).run();
     }
 
     public static void main(String[] args) throws java.io.IOException {
         System.out.println("go!");
         ProblemSpec spec = new ProblemSpec();
-        spec.loadProblem("input3.txt");
-        GridGraph gg = new GridGraph(spec);
+        spec.loadProblem("input.txt");
+        GridGraph2 gg = new GridGraph2(spec);
         gg.printGraph();
         Box b = spec.getMovingBoxes().get(1);
         Point2D g = spec.getMovingBoxEndPositions().get(1);
         List<Node> path = gg.aStar(b, g.getX(), g.getY());
         gg.printGraphPath(path);
-        List<Point2D> coords = gg.getCoordPath(path, b.getWidth());
+        List<Point2D> coords = gg.getCoordPath(path, g, b);
         System.out.println(coords);
 
         StringBuilder sb = new StringBuilder();
         sb.append(coords.size() + "\n");
         for(Point2D c : coords) {
+            Box other = spec.getMovingBoxes().get(0);
+            Box mobs = spec.getMovingObstacles().get(0);
             sb.append(spec.getInitialRobotConfig().getPos().getX() + " ");
             sb.append(spec.getInitialRobotConfig().getPos().getY() + " ");
             sb.append(spec.getInitialRobotConfig().getOrientation() + " ");
-            sb.append(round(spec.getMovingBoxes().get(0).getPos().getX(), 4) + " ");
-            sb.append(round(spec.getMovingBoxes().get(0).getPos().getY(), 4) + " ");
+            sb.append(round(other.getPos().getX() + other.getWidth()/2, 4) + " ");
+            sb.append(round(other.getPos().getY() + other.getWidth()/2, 4) + " ");
             sb.append(round(c.getX(), 4) + " ");
             sb.append(round(c.getY(), 4) + " ");
-            sb.append(round(spec.getMovingObstacles().get(0).getPos().getX(), 4) + " ");
-            sb.append(round(spec.getMovingObstacles().get(0).getPos().getY(), 4) + "\n");
+            sb.append(round(mobs.getPos().getX() + mobs.getWidth()/2, 4) + " ");
+            sb.append(round(mobs.getPos().getY() + mobs.getWidth()/2, 4) + "\n");
         }
         System.out.println(sb.toString());
     }
 
     public class Node {
         private Box item;
-        private double x;
-        private double y;
+        private BigDecimal x;
+        private BigDecimal y;
 
-        Node(Box item, double x, double y) {
+        Node(Box item, BigDecimal x, BigDecimal y) {
             this(item);
             this.x = x;
             this.y = y;
@@ -179,11 +183,11 @@ public class GridGraph {
             return item;
         }
 
-        double getX() {
+        BigDecimal getX() {
             return x;
         }
 
-        double getY() {
+        BigDecimal getY() {
             return y;
         }
 
@@ -196,7 +200,7 @@ public class GridGraph {
         }
 
         public String toString() {
-            return "(" + (int)(x/nodeWidth) + "," + (int)(y/nodeWidth) + ")";
+            return "(" + (int)(x.divide(nodeWidth).intValue()) + "," + (int)(y.divide(nodeWidth).intValue()) + ")";
         }
 
     }
@@ -206,61 +210,48 @@ public class GridGraph {
         private Node start;
         private Node goal;
 
-        public AStar(Box box, double xGoal, double yGoal) {
+        public AStar(Box box, BigDecimal xGoal, BigDecimal yGoal) {
             this.box = box;
 
-            double xStart = box.getPos().getX();
-            double yStart = box.getPos().getY();
-            int startNodeCol = (int)(xStart/nodeWidth);
-            int startNodeRow = (int)(yStart/nodeWidth);
-            int goalNodeCol = (int)(xGoal/nodeWidth);
-            int goalNodeRow = (int)(yGoal/nodeWidth);
+            BigDecimal xStart = round(box.getPos().getX(), 4);
+            BigDecimal yStart = round(box.getPos().getY(), 4);
+            int startNodeCol = xStart.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
+            int startNodeRow = yStart.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
+            int goalNodeCol = xGoal.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
+            int goalNodeRow = yGoal.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
 
             start = grid[startNodeRow][startNodeCol];
             goal = grid[goalNodeRow][goalNodeCol];
         }
 
         private int heuristicCost(Node start, Node goal) {
-            int heuristic = (int)(Math.abs(start.x - goal.x) +
-                    Math.abs(start.y - goal.y));
+            int heuristic = (int)(Math.abs(start.x.subtract(goal.x).doubleValue()) +
+                    Math.abs(start.y.subtract(goal.y).doubleValue()));
             Set<Node> neighbours = getNeighbours(start);
             heuristic += 4 - neighbours.size();
-            for(Node node : neighbours) {
-                if(getNeighbours(node).size() < 4) {
-                    heuristic += 1;
-                }
-            }
             return heuristic;
         }
 
         private Set<Node> getNeighbours(Node node) {
-            double x = node.getX();
-            double y = node.getY();
-            int nodeCol = (int)(x/nodeWidth);
-            int nodeRow = (int)(y/nodeWidth);
-            int topCol = (int)((x + box.getWidth())/nodeWidth);
-            int topRow = (int)((y + box.getWidth())/nodeWidth);
+            BigDecimal x = node.getX();
+            BigDecimal y = node.getY();
+            int nodeCol = x.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
+            int nodeRow = y.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
+            int topCol = x.add(round(box.getWidth(), 4)).divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
+            int topRow = y.add(round(box.getWidth(), 4)).divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
 
+            Node above = topRow + 1 < grid[0].length ? grid[nodeRow + 1][nodeCol] : null;
+            Node below = nodeRow - 1 >= 0 ? grid[nodeRow - 1][nodeCol] : null;
+            Node left = nodeCol - 1 >= 0 ? grid[nodeRow][nodeCol - 1] : null;
+            Node right = topCol + 1 < grid.length ? grid[nodeRow][nodeCol + 1] : null;
+
+            Node[] nearby = {above, below, left, right};
             Set<Node> neighbours = new HashSet<>();
-            if(nodeCol - 1 >= 0 && grid[nodeRow][nodeCol - 1] != null &&
-                    grid[nodeRow][nodeCol - 1].getItem() == null &&
-                    grid[topRow][topCol - 1] != null) { //move left
-                neighbours.add(grid[nodeRow][nodeCol - 1]);
-            }
-            if(nodeRow - 1 >= 0 && grid[nodeRow - 1][nodeCol] != null &&
-                    grid[nodeRow - 1][nodeCol].getItem() == null &&
-                    grid[topRow - 1][topCol] != null) { //move down
-                neighbours.add(grid[nodeRow - 1][nodeCol]);
-            }
-            if(topCol + 1 < grid[0].length && grid[topRow][topCol + 1] != null &&
-                    grid[topRow][topCol + 1].getItem() == null &&
-                    grid[nodeRow][nodeCol + 1] != null) { //move right
-                neighbours.add(grid[nodeRow][nodeCol + 1]);
-            }
-            if(topRow + 1 < grid.length && grid[topRow + 1][topCol] != null &&
-                    grid[topRow + 1][topCol].getItem() == null &&
-                    grid[nodeRow + 1][nodeCol] != null) { //move up
-                neighbours.add(grid[nodeRow + 1][nodeCol]);
+
+            for(Node n : nearby) {
+                if(n != null && n.getItem() == null) {
+                    neighbours.add(n);
+                }
             }
 
             return neighbours;
