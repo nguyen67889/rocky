@@ -2,6 +2,7 @@ package solution;
 
 import problem.*;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
@@ -18,7 +19,7 @@ public class GridGraph2 {
     private Node[][] grid;
 
     GridGraph2(ProblemSpec spec) {
-        nodeWidth = round(AREA_WIDTH/DIVIDER, 4);
+        nodeWidth = Util.round(AREA_WIDTH/DIVIDER, 4);
         int numNodesHeight;
         int numNodesWidth = numNodesHeight = (int)DIVIDER;
 
@@ -91,6 +92,10 @@ public class GridGraph2 {
         System.out.println(sb.toString());
     }
 
+
+
+
+
     public List<Point2D> getCoordPath(List<Node> path, Point2D goal, Box myBox) {
         List<Point2D> result = new ArrayList<>();
         double width = myBox.getWidth();
@@ -98,47 +103,28 @@ public class GridGraph2 {
         double y = myBox.getPos().getY() + width/2;
         Point2D thisPt = new Point2D.Double(x, y);
         result.add(thisPt);
-        path.add(new Node(null, round(goal.getX(), 4), round(goal.getY(), 4)));
+        path.add(new Node(null, Util.round(goal.getX(), 4), Util.round(goal.getY(), 4)));
         for(Node node : path) {
-            while(thisPt.getX() < node.x.doubleValue() + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX() + 0.001, thisPt.getY());
-                result.add(thisPt);
-            }
-            while(thisPt.getX() > node.x.doubleValue() + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX() - 0.001, thisPt.getY());
-                result.add(thisPt);
-            }
-            while(thisPt.getY() < node.y.doubleValue() + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX(), thisPt.getY() + 0.001);
-                result.add(thisPt);
-            }
-            while(thisPt.getY() > node.y.doubleValue() + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX(), thisPt.getY() - 0.001);
-                result.add(thisPt);
-            }
+
         }
 
         return result;
     }
 
-    private static BigDecimal round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(places, BigDecimal.ROUND_HALF_UP);
-        return bd;
-    }
-
     public List<Node> aStar(Box box, double xGoal, double yGoal) {
-        return new AStar(box, round(xGoal, 4), round(yGoal, 4)).run();
+        return new AStar(box, Util.round(xGoal, 4), Util.round(yGoal, 4)).run();
     }
 
     public static void main(String[] args) throws java.io.IOException {
         System.out.println("go!");
         ProblemSpec spec = new ProblemSpec();
         spec.loadProblem("input.txt");
+
+        RobotConfig init = spec.getInitialRobotConfig();
         GridGraph2 gg = new GridGraph2(spec);
-        gg.printGraph();
+        double x = init.getPos().getX();
+        double y = init.getPos().getY() - 0.1;
+        /*gg.printGraph();
         Box b = spec.getMovingBoxes().get(1);
         Point2D g = spec.getMovingBoxEndPositions().get(1);
         List<Node> path = gg.aStar(b, g.getX(), g.getY());
@@ -161,7 +147,7 @@ public class GridGraph2 {
             sb.append(round(mobs.getPos().getX() + mobs.getWidth()/2, 4) + " ");
             sb.append(round(mobs.getPos().getY() + mobs.getWidth()/2, 4) + "\n");
         }
-        System.out.println(sb.toString());
+        System.out.println(sb.toString());*/
     }
 
     public class Node {
@@ -213,8 +199,8 @@ public class GridGraph2 {
         public AStar(Box box, BigDecimal xGoal, BigDecimal yGoal) {
             this.box = box;
 
-            BigDecimal xStart = round(box.getPos().getX(), 4);
-            BigDecimal yStart = round(box.getPos().getY(), 4);
+            BigDecimal xStart = Util.round(box.getPos().getX(), 4);
+            BigDecimal yStart = Util.round(box.getPos().getY(), 4);
             int startNodeCol = xStart.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
             int startNodeRow = yStart.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
             int goalNodeCol = xGoal.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
@@ -237,8 +223,8 @@ public class GridGraph2 {
             BigDecimal y = node.getY();
             int nodeCol = x.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
             int nodeRow = y.divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
-            int topCol = x.add(round(box.getWidth(), 4)).divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
-            int topRow = y.add(round(box.getWidth(), 4)).divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
+            int topCol = x.add(Util.round(box.getWidth(), 4)).divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
+            int topRow = y.add(Util.round(box.getWidth(), 4)).divide(nodeWidth, BigDecimal.ROUND_HALF_UP).intValue();
 
             Node above = topRow + 1 < grid[0].length ? grid[nodeRow + 1][nodeCol] : null;
             Node below = nodeRow - 1 >= 0 ? grid[nodeRow - 1][nodeCol] : null;
