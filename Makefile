@@ -14,7 +14,6 @@ bundle:
 
 docs:
 	javadoc -sourcepath ./src -d ./docs -subpackages .;
-	cp logo.ico ./docs/favicon.ico
 
 clean:
 	rm -r ./out/ ./dist/ ./docs/ ./report/report.pdf
