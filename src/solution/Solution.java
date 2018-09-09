@@ -13,42 +13,63 @@ import java.util.List;
 
 public class Solution {
 
-    public static void main(String[] args) {
-        if (args.length != 2) {
-            System.err.println(
-                    "Invalid Usage: java ProgramName inputFileName outputFileName");
-            System.exit(1);
-        }
-        String inputFile = args[0];
-        String outputFile = args[1];
-
-        ProblemSpec problemSpec = new ProblemSpec();
-        try {
-            problemSpec.loadProblem(inputFile);
-        } catch (IOException e) {
-            System.err.println("FileIO Error: could not load input file");
-        }
-
-        Map<Box, List<Point2D>> movements = calculateMovements(problemSpec);
-
+    /**
+     * Write a formatted solution to an output file.
+     *
+     * @param output The formatted solution.
+     * @param outputFilename The filename to output the solution to.
+     */
+    private static void writeSolution(String output, String outputFilename) {
         try {
             BufferedWriter input = new BufferedWriter(
-                    new FileWriter(outputFile));
-            input.write(Formatter.format(problemSpec, movements));
+                    new FileWriter(outputFilename));
+            input.write(output);
             input.flush();
         } catch (IOException e) {
             System.err.println("FileIO Error: could not output solution file");
         }
+    }
 
+    /**
+     * Load a problem with no solution.
+     *
+     * @param problemFile Filename of the problem file.
+     * @return A problem spec with no solution.
+     */
+    private static ProblemSpec loadProblem(String problemFile) {
+        ProblemSpec problem = new ProblemSpec();
         try {
-            problemSpec.loadSolution(outputFile);
+            problem.loadProblem(problemFile);
+        } catch (IOException e) {
+            System.err.println("FileIO Error: could not load input file");
+        }
+        return problem;
+    }
+
+    /**
+     * Load a problem and solution into a problem spec.
+     *
+     * @param problemFile Filename of the problem file.
+     * @param solutionFile Filename of the solution file.
+     * @return A problem spec wih a solution.
+     */
+    private static ProblemSpec loadProblem(String problemFile, String solutionFile) {
+        ProblemSpec problem = loadProblem(problemFile);
+        try {
+            problem.loadSolution(solutionFile);
         } catch (IOException e) {
             System.err.println("FileIO Error: could not read solution file");
         }
-
-        test(problemSpec);
+        return problem;
     }
 
+    /**
+     * Calcuate the movements required by all the boxes in a problem to reach
+     * the solution using an A* algorithm.
+     *
+     * @param problem The problem specification.
+     * @return A map of boxes to the list of positions they should move to.
+     */
     private static Map<Box, List<Point2D>> calculateMovements(
             ProblemSpec problem) {
         Grid<BigDecimal> grid = new Grid<>(problem);
@@ -75,6 +96,11 @@ public class Solution {
         return movements;
     }
 
+    /**
+     * Use the tester on a specific problem to ensure correctness.
+     *
+     * @param problemSpec The problem specification with a solution.
+     */
     private static void test(ProblemSpec problemSpec) {
         Tester tester = new Tester(problemSpec);
 
@@ -90,5 +116,32 @@ public class Solution {
         } else {
             System.out.println("Problem has not been loaded correctly");
         }
+    }
+
+    /**
+     * Load a problem and generate a solution based on the arguments provided.
+     *
+     * Usage: java ProgramName inputFileName outputFileName
+     *
+     * @param args Command line args.
+     */
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            System.err.println(
+                    "Invalid Usage: java ProgramName inputFileName outputFileName");
+            System.exit(1);
+        }
+
+        String inputFile = args[0];
+        String outputFile = args[1];
+
+        ProblemSpec problemSpec = loadProblem(inputFile);
+        Map<Box, List<Point2D>> movements = calculateMovements(problemSpec);
+
+        String output = Formatter.format(problemSpec, movements);
+        writeSolution(output, outputFile);
+
+        problemSpec = loadProblem(inputFile, outputFile);
+        test(problemSpec);
     }
 }
