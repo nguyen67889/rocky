@@ -85,15 +85,19 @@ public class AStar<T extends Number> {
      */
     private boolean isEmptySpace(Point2D lowerPoint, Point2D upperPoint) {
         int lowerX = (int) lowerPoint.getX();
-        int lowerY = (int) lowerPoint.getX();
+        int lowerY = (int) lowerPoint.getY();
         int upperX = (int) upperPoint.getX();
-        int upperY = (int) upperPoint.getX();
+        int upperY = (int) upperPoint.getY();
 
         // Ensure the the box is within the grid
         boolean aboveBounds = lowerX >= 0 && lowerY >= 0;
         boolean belowBounds = upperX < grid.length && upperY < grid[0].length;
 
         boolean inBounds = aboveBounds && belowBounds;
+
+        if (!inBounds) {
+            return false;
+        }
 
         // Ensure that the space is not blocked
         boolean isNotBlocked = grid[lowerX][lowerY] != null
@@ -103,7 +107,7 @@ public class AStar<T extends Number> {
         boolean hasNoBox = grid[lowerX][lowerY].getBox() == null
                 && grid[upperX][upperY].getBox() == null;
 
-        return inBounds && isNotBlocked && hasNoBox;
+        return isNotBlocked && hasNoBox;
     }
 
     /**
