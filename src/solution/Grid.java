@@ -1,6 +1,5 @@
 package solution;
 
-import java.awt.geom.Point2D.Double;
 import problem.*;
 
 import java.awt.geom.Point2D;
@@ -44,7 +43,7 @@ public class Grid<T extends Number> {
                     }
                 }
 
-                List<Box> boxes = spec.getMovingBoxes();
+                List<Box> boxes = new ArrayList<>(spec.getMovingBoxes());
                 boxes.addAll(spec.getMovingObstacles());
                 for(Box b : boxes) {
                     Rectangle2D rect = b.getRect();
@@ -62,9 +61,6 @@ public class Grid<T extends Number> {
 
     public void moveBox(Box box, Point2D position) {
         int width = (int) DIVIDER;
-
-//        box.rect.setRect(position.getX(), position.getY(),
-//                box.getWidth(), box.getWidth());
 
         Box newBox = null;
         try {
