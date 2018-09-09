@@ -45,28 +45,52 @@ public class Formatter {
         return builder;
     }
 
+    /**
+     * Format output to a file for a problem spec and a mapping of box movements.
+     *
+     * @param problem The input problem specification.
+     * @param movements A map of boxes to the list of positions they should move to.
+     * @param count Sum total of movements made by all boxes.
+     *
+     * @return The formatted output.
+     */
     public static String format(ProblemSpec problem, Map<Box,
             List<Point2D>> movements, int count) {
-
         StringBuilder builder = new StringBuilder();
+
+        // Include a header of how many moves will be made
         builder.append(count).append("\n");
 
         for (Entry<Box, List<Point2D>> entry : movements.entrySet()) {
+            // For each move made by a box
             for (Point2D point : entry.getValue()) {
+                // Output the robots location
+                // TODO: Fix
                 builder.append(
                         Formatter.formatRobot(problem.getInitialRobotConfig()));
 
+                // List of all box positions at this state
                 List<Point2D> boxes = new ArrayList<>();
 
-                for (Box box : problem.getMovingBoxes().subList(0, 3)) {
+                // List of all moveable objects in the map
+                List<Box> movables = new ArrayList<>(problem.getMovingBoxes());
+                movables.addAll(problem.getMovingObstacles());
+
+                for (Box box : movables) {
                     Point2D.Double position;
+                    double halfWidth = box.getWidth() / 2;
+
+                    // Update box position if current box is moving box
                     if (box.equals(entry.getKey())) {
-                        position = new Double(point.getX(), point.getY());
-                    } else {
-                        position = new Double(
-                                box.getPos().getX() + box.getWidth() / 2,
-                                box.getPos().getY() + box.getWidth() / 2);
+                        Point2D.Double newPos = new Double(
+                                point.getX() - halfWidth,
+                                point.getY() - halfWidth);
+                        box.getPos().setLocation(newPos);
                     }
+
+                    // Store the position for this box at this step
+                    position = new Double(box.getPos().getX() + halfWidth,
+                                box.getPos().getY() + halfWidth);
                     boxes.add(position);
                 }
 
