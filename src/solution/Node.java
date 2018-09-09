@@ -58,24 +58,11 @@ public class Node<T extends Number> {
         return y;
     }
 
-
     int f() {
         return g + h;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Node)) {
-            return false;
-        }
-
-        Node other = (Node) obj;
-        return x.intValue() == other.x.intValue()
-                && y.intValue() == other.y.intValue();
-    }
-
     public String toString() {
-        return getBox() != null ? getBox().toString() : null;
-        //return "(" + (int)(x/nodeWidth) + "," + (int)(y/nodeWidth) + ")";
+        return "(" + x + "," + y + " @ " + getBox() + ")";
     }
 }
