@@ -1,8 +1,7 @@
 package solution;
 
-import problem.Box;
-
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +39,7 @@ public class AStar<T extends Number> {
     public AStar(Node<T>[][] grid, Point2D start, Point2D goal, T width) {
         int startNodeCol = (int) (start.getX() / nodeWidth);
         int startNodeRow = (int) (start.getY() / nodeWidth);
+
         int goalNodeCol = (int) (goal.getX() / nodeWidth);
         int goalNodeRow = (int) (goal.getY() / nodeWidth);
 
@@ -60,10 +60,13 @@ public class AStar<T extends Number> {
         double xDist = Math.abs(start.getX().doubleValue() - goal.getX().doubleValue());
         double yDist = Math.abs(start.getY().doubleValue() - goal.getY().doubleValue());
 
+        // Starting heuristic of plain distance
         int heuristic = (int) (xDist + yDist);
-        Set<Node<T>> neighbours = getNeighbours(start);
 
+        // Prefer to move towards nodes with less neighbours
+        Set<Node<T>> neighbours = getNeighbours(start);
         heuristic += 4 - neighbours.size();
+
         for (Node<T> node : neighbours) {
             if (getNeighbours(node).size() < 4) {
                 heuristic += 1;
@@ -71,6 +74,36 @@ public class AStar<T extends Number> {
         }
 
         return heuristic;
+    }
+
+    /**
+     * Determine if a space in a grid is freely available.
+     *
+     * @param lowerPoint The lower point of the grid.
+     * @param upperPoint The upper point of the grid.
+     * @return True iff the space is available.
+     */
+    private boolean isEmptySpace(Point2D lowerPoint, Point2D upperPoint) {
+        int lowerX = (int) lowerPoint.getX();
+        int lowerY = (int) lowerPoint.getX();
+        int upperX = (int) upperPoint.getX();
+        int upperY = (int) upperPoint.getX();
+
+        // Ensure the the box is within the grid
+        boolean aboveBounds = lowerX >= 0 && lowerY >= 0;
+        boolean belowBounds = upperX < grid.length && upperY < grid[0].length;
+
+        boolean inBounds = aboveBounds && belowBounds;
+
+        // Ensure that the space is not blocked
+        boolean isNotBlocked = grid[lowerX][lowerY] != null
+                && grid[upperX][upperY] != null;
+
+        // Ensure that there isn't already a box in the space
+        boolean hasNoBox = grid[lowerX][lowerY].getBox() == null
+                && grid[upperX][upperY].getBox() == null;
+
+        return inBounds && isNotBlocked && hasNoBox;
     }
 
     /**
@@ -83,31 +116,34 @@ public class AStar<T extends Number> {
         double x = node.getX().doubleValue();
         double y = node.getY().doubleValue();
 
+        // Calculate the upper and lower bounds of the node
         int nodeCol = (int) (x / nodeWidth);
         int nodeRow = (int) (y / nodeWidth);
         int topCol = (int) ((x + width.doubleValue()) / nodeWidth);
         int topRow = (int) ((y + width.doubleValue()) / nodeWidth);
 
         Set<Node<T>> neighbours = new HashSet<>();
-        if (nodeCol - 1 >= 0 && grid[nodeRow][nodeCol - 1] != null &&
-                grid[nodeRow][nodeCol - 1].getBox() == null &&
-                grid[topRow][topCol - 1] != null) { //move left
-            neighbours.add(grid[nodeRow][nodeCol - 1]);
-        }
-        if (nodeRow - 1 >= 0 && grid[nodeRow - 1][nodeCol] != null &&
-                grid[nodeRow - 1][nodeCol].getBox() == null &&
-                grid[topRow - 1][topCol] != null) { //move down
-            neighbours.add(grid[nodeRow - 1][nodeCol]);
-        }
-        if (topCol + 1 < grid[0].length && grid[topRow][topCol + 1] != null &&
-                grid[topRow][topCol + 1].getBox() == null &&
-                grid[nodeRow][nodeCol + 1] != null) { //move right
-            neighbours.add(grid[nodeRow][nodeCol + 1]);
-        }
-        if (topRow + 1 < grid.length && grid[topRow + 1][topCol] != null &&
-                grid[topRow + 1][topCol].getBox() == null &&
-                grid[nodeRow + 1][nodeCol] != null) { //move up
-            neighbours.add(grid[nodeRow + 1][nodeCol]);
+
+        Point2D lowerPoint;
+        Point2D upperPoint;
+
+        // Loop through all the coordinates around a point
+        for (int xx = -1; xx <= 1; xx++) {
+            for (int yy = -1; yy <= 1; yy++) {
+                // Don't count itself as a neighbour
+                if (xx == 0 && yy == 0) {
+                    continue;
+                }
+
+                // Calculate the bounds of the new neighbour
+                lowerPoint = new Double(nodeRow + xx, nodeCol + yy);
+                upperPoint = new Double(topRow + xx, topCol + yy);
+
+                // Add as neighbour if the space is empty
+                if (isEmptySpace(lowerPoint, upperPoint)) {
+                    neighbours.add(grid[nodeRow + xx][nodeCol + yy]);
+                }
+            }
         }
 
         return neighbours;
