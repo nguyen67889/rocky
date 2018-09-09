@@ -9,10 +9,11 @@ public class Util {
     }
 
     public static BigDecimal round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
+        if (places < 0) {
+            throw new IllegalArgumentException();
+        }
 
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(places, BigDecimal.ROUND_HALF_UP);
-        return bd;
+        BigDecimal number = new BigDecimal(value);
+        return number.setScale(places, BigDecimal.ROUND_HALF_UP);
     }
 }

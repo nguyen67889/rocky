@@ -16,7 +16,7 @@ public class Grid<T extends Number> {
     private Node[][] grid;
 
     public Grid(ProblemSpec spec) {
-        nodeWidth = round(AREA_WIDTH/DIVIDER, 4);
+        nodeWidth = Util.round(AREA_WIDTH/DIVIDER, 4);
         int numNodesHeight;
         int numNodesWidth = numNodesHeight = (int)DIVIDER;
 
@@ -96,7 +96,7 @@ public class Grid<T extends Number> {
         double y = myBox.getPos().getY() + width/2;
         Point2D thisPt = new Point2D.Double(x, y);
         result.add(thisPt);
-        path.add(new Node(null, round(goal.getX(), 4), round(goal.getY(), 4)));
+        path.add(new Node(null, Util.round(goal.getX(), 4), Util.round(goal.getY(), 4)));
         for(Node node : path) {
             while(thisPt.getX() < node.getX().doubleValue() + width/2) {
                 thisPt = new Point2D.Double(thisPt.getX() + 0.001, thisPt.getY());
@@ -117,14 +117,6 @@ public class Grid<T extends Number> {
         }
 
         return result;
-    }
-
-    private static BigDecimal round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(places, BigDecimal.ROUND_HALF_UP);
-        return bd;
     }
 
     public static void main(String[] args) throws java.io.IOException {
@@ -153,12 +145,12 @@ public class Grid<T extends Number> {
             sb.append(spec.getInitialRobotConfig().getPos().getX() + " ");
             sb.append(spec.getInitialRobotConfig().getPos().getY() + " ");
             sb.append(spec.getInitialRobotConfig().getOrientation() + " ");
-            sb.append(round(other.getPos().getX() + other.getWidth()/2, 4) + " ");
-            sb.append(round(other.getPos().getY() + other.getWidth()/2, 4) + " ");
-            sb.append(round(c.getX(), 4) + " ");
-            sb.append(round(c.getY(), 4) + " ");
-            sb.append(round(mobs.getPos().getX() + mobs.getWidth()/2, 4) + " ");
-            sb.append(round(mobs.getPos().getY() + mobs.getWidth()/2, 4) + "\n");
+            sb.append(Util.round(other.getPos().getX() + other.getWidth()/2, 4) + " ");
+            sb.append(Util.round(other.getPos().getY() + other.getWidth()/2, 4) + " ");
+            sb.append(Util.round(c.getX(), 4) + " ");
+            sb.append(Util.round(c.getY(), 4) + " ");
+            sb.append(Util.round(mobs.getPos().getX() + mobs.getWidth()/2, 4) + " ");
+            sb.append(Util.round(mobs.getPos().getY() + mobs.getWidth()/2, 4) + "\n");
         }
         System.out.println(sb.toString());
     }
