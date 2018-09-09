@@ -120,33 +120,22 @@ public class AStar<T extends Number> {
         double x = node.getX().doubleValue();
         double y = node.getY().doubleValue();
 
-        // Calculate the upper and lower bounds of the node
-        int nodeCol = (int) (x / nodeWidth);
-        int nodeRow = (int) (y / nodeWidth);
-        int topCol = (int) ((x + width.doubleValue()) / nodeWidth);
-        int topRow = (int) ((y + width.doubleValue()) / nodeWidth);
+        int nodeCol = Util.roundHalf(x / nodeWidth);
+        int nodeRow = Util.roundHalf(y / nodeWidth);
+        int topCol = Util.roundHalf((x + this.width.doubleValue()) / nodeWidth);
+        int topRow = Util.roundHalf((y + this.width.doubleValue()) / nodeWidth);
 
+        Node above = topRow + 1 < grid[0].length ? grid[nodeRow + 1][nodeCol] : null;
+        Node below = nodeRow - 1 >= 0 ? grid[nodeRow - 1][nodeCol] : null;
+        Node left = nodeCol - 1 >= 0 ? grid[nodeRow][nodeCol - 1] : null;
+        Node right = topCol + 1 < grid.length ? grid[nodeRow][nodeCol + 1] : null;
+
+        Node[] nearby = {above, below, left, right};
         Set<Node<T>> neighbours = new HashSet<>();
 
-        Point2D lowerPoint;
-        Point2D upperPoint;
-
-        // Loop through all the coordinates around a point
-        for (int xx = -1; xx <= 1; xx++) {
-            for (int yy = -1; yy <= 1; yy++) {
-                // Don't count itself as a neighbour
-                if (xx == 0 && yy == 0) {
-                    continue;
-                }
-
-                // Calculate the bounds of the new neighbour
-                lowerPoint = new Double(nodeRow + xx, nodeCol + yy);
-                upperPoint = new Double(topRow + xx, topCol + yy);
-
-                // Add as neighbour if the space is empty
-                if (isEmptySpace(lowerPoint, upperPoint)) {
-                    neighbours.add(grid[nodeRow + xx][nodeCol + yy]);
-                }
+        for (Node n : nearby) {
+            if (n != null && n.getBox() == null) {
+                neighbours.add(n);
             }
         }
 
