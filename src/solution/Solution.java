@@ -72,15 +72,34 @@ public class Solution {
             System.err.println("FileIO Error: could not load input file");
         }
 
-        Grid<BigDecimal> grid = new Grid<>(problemSpec);
+        Map<Box, List<Point2D>> movements = calculateMovements(problemSpec);
+
+        try {
+            BufferedWriter input = new BufferedWriter(new FileWriter(outputFile));
+            input.write(Formatter.format(problemSpec, movements));
+            input.flush();
+        } catch (IOException e) {
+            System.err.println("FileIO Error: could not output solution file");
+        }
+
+        try {
+            problemSpec.loadSolution(outputFile);
+        } catch (IOException e) {
+            System.err.println("FileIO Error: could not read solution file");
+        }
+
+        test(problemSpec);
+    }
+
+    private static Map<Box, List<Point2D>> calculateMovements(ProblemSpec problem) {
+        Grid<BigDecimal> grid = new Grid<>(problem);
         Node<BigDecimal>[][] map = grid.getGrid();
 
         Map<Box, List<Point2D>> movements = new HashMap<>();
-        int moves = 0;
 
-        for (int i = 0; i < problemSpec.getMovingBoxEndPositions().size(); i++) {
-            Box box = problemSpec.getMovingBoxes().get(i);
-            Point2D goal = problemSpec.getMovingBoxEndPositions().get(i);
+        for (int i = 0; i < problem.getMovingBoxEndPositions().size(); i++) {
+            Box box = problem.getMovingBoxes().get(i);
+            Point2D goal = problem.getMovingBoxEndPositions().get(i);
 
             AStar<BigDecimal> aStar = new AStar<>(map, box.getPos(),
                     goal, BigDecimal.valueOf(box.getWidth()));
@@ -91,19 +110,10 @@ public class Solution {
             Point2D lastPosition = coords.get(coords.size() - 1);
             grid.moveBox(box, lastPosition);
 
-            moves += coords.size();
             movements.put(box, coords);
         }
 
-        try {
-            BufferedWriter input = new BufferedWriter(new FileWriter(outputFile));
-            input.write(Formatter.format(problemSpec, movements, moves));
-            input.flush();
-        } catch (IOException e) {
-            System.err.println("FileIO Error: could not output solution file");
-        }
-
-        test(problemSpec);
+        return movements;
     }
 
     private static void test(ProblemSpec problemSpec) {

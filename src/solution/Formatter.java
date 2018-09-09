@@ -50,16 +50,19 @@ public class Formatter {
      *
      * @param problem The input problem specification.
      * @param movements A map of boxes to the list of positions they should move to.
-     * @param count Sum total of movements made by all boxes.
      *
      * @return The formatted output.
      */
-    public static String format(ProblemSpec problem, Map<Box,
-            List<Point2D>> movements, int count) {
+    public static String format(ProblemSpec problem, Map<Box, List<Point2D>> movements) {
         StringBuilder builder = new StringBuilder();
 
+        int moves = 0;
+        for (List<Point2D> positions : movements.values()) {
+            moves += positions.size();
+        }
+
         // Include a header of how many moves will be made
-        builder.append(count).append("\n");
+        builder.append(moves).append("\n");
 
         for (Entry<Box, List<Point2D>> entry : movements.entrySet()) {
             // For each move made by a box
