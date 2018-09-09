@@ -172,7 +172,7 @@ public class AStar<T extends Number> {
                 }
             }
 
-            if (current.equals(goal)) {
+            if (goal.equals(current)) {
                 List<Node<T>> path = new ArrayList<>();
                 while (current.parent != null) {
                     path.add(0, current);
