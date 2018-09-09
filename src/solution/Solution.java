@@ -1,5 +1,10 @@
 package solution;
 
+import java.awt.geom.Point2D.Double;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import problem.Box;
 import problem.ProblemSpec;
 import problem.RobotConfig;
 import tester.Tester;
@@ -65,6 +70,37 @@ public class Solution {
             problemSpec.loadProblem(inputFile);
         } catch (IOException e) {
             System.err.println("FileIO Error: could not load input file");
+        }
+
+        Grid<BigDecimal> grid = new Grid<>(problemSpec);
+        Node<BigDecimal>[][] map = grid.getGrid();
+
+        Map<Box, List<Point2D>> movements = new HashMap<>();
+        int moves = 0;
+
+        for (int i = 0; i < problemSpec.getMovingBoxEndPositions().size(); i++) {
+            Box box = problemSpec.getMovingBoxes().get(i);
+            Point2D goal = problemSpec.getMovingBoxEndPositions().get(i);
+
+            AStar<BigDecimal> aStar = new AStar<>(map, box.getPos(),
+                    goal, BigDecimal.valueOf(box.getWidth()));
+            List<Node<BigDecimal>> path = aStar.run();
+
+            List<Point2D> coords = grid.getCoordPath(path, goal, box);
+
+            Point2D lastPosition = coords.get(coords.size() - 1);
+            grid.moveBox(box, lastPosition);
+
+            moves += coords.size();
+            movements.put(box, coords);
+        }
+
+        try {
+            BufferedWriter input = new BufferedWriter(new FileWriter(outputFile));
+            input.write(Formatter.format(problemSpec, movements, moves));
+            input.flush();
+        } catch (IOException e) {
+            System.err.println("FileIO Error: could not output solution file");
         }
 
         test(problemSpec);
