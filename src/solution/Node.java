@@ -10,6 +10,7 @@ import problem.Box;
  * @param <T> Numeric points of the grid
  */
 public class Node<T extends Number> {
+
     // The box at the point, null if empty
     private Box box;
 

@@ -50,10 +50,10 @@ public class Formatter {
      *
      * @param problem The input problem specification.
      * @param movements A map of boxes to the list of positions they should move to.
-     *
      * @return The formatted output.
      */
-    public static String format(ProblemSpec problem, Map<Box, List<Point2D>> movements) {
+    public static String format(ProblemSpec problem,
+            Map<Box, List<Point2D>> movements) {
         StringBuilder builder = new StringBuilder();
 
         int moves = 0;
@@ -93,7 +93,7 @@ public class Formatter {
 
                     // Store the position for this box at this step
                     position = new Double(box.getPos().getX() + halfWidth,
-                                box.getPos().getY() + halfWidth);
+                            box.getPos().getY() + halfWidth);
                     boxes.add(position);
                 }
 

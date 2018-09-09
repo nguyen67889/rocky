@@ -23,21 +23,21 @@ public class Grid<T extends Number> {
     private Node[][] grid;
 
     public Grid(ProblemSpec spec) {
-        nodeWidth = Util.round(AREA_WIDTH/DIVIDER, 4);
+        nodeWidth = Util.round(AREA_WIDTH / DIVIDER, 4);
         int numNodesHeight;
-        int numNodesWidth = numNodesHeight = (int)DIVIDER;
+        int numNodesWidth = numNodesHeight = (int) DIVIDER;
 
         grid = new Node[numNodesHeight][numNodesWidth];
-        for(int i = 0; i < numNodesHeight; i++) {
-            for(int j = 0; j < numNodesWidth; j++) {
+        for (int i = 0; i < numNodesHeight; i++) {
+            for (int j = 0; j < numNodesWidth; j++) {
                 BigDecimal x = nodeWidth.multiply(BigDecimal.valueOf(j));
                 BigDecimal y = nodeWidth.multiply(BigDecimal.valueOf(i));
 
                 grid[i][j] = new Node<>(null, x, y);
 
-                for(StaticObstacle o : spec.getStaticObstacles()) {
+                for (StaticObstacle o : spec.getStaticObstacles()) {
                     Rectangle2D rect = o.getRect();
-                    if(rect.intersects(x.doubleValue(), y.doubleValue(),
+                    if (rect.intersects(x.doubleValue(), y.doubleValue(),
                             nodeWidth.doubleValue(), nodeWidth.doubleValue())) {
                         grid[i][j] = null;
                     }
@@ -45,9 +45,10 @@ public class Grid<T extends Number> {
 
                 List<Box> boxes = new ArrayList<>(spec.getMovingBoxes());
                 boxes.addAll(spec.getMovingObstacles());
-                for(Box b : boxes) {
+                for (Box b : boxes) {
                     Rectangle2D rect = b.getRect();
-                    if(rect.intersects(x.doubleValue(), y.doubleValue(), nodeWidth.doubleValue(), nodeWidth.doubleValue())) {
+                    if (rect.intersects(x.doubleValue(), y.doubleValue(),
+                            nodeWidth.doubleValue(), nodeWidth.doubleValue())) {
                         grid[i][j] = new Node<>(b, x, y);
                     }
                 }
@@ -110,29 +111,35 @@ public class Grid<T extends Number> {
         return result.toString();
     }
 
-    public List<Point2D> getCoordPath(List<Node<T>> path, Point2D goal, Box myBox) {
+    public List<Point2D> getCoordPath(List<Node<T>> path, Point2D goal,
+            Box myBox) {
         List<Point2D> result = new ArrayList<>();
         double width = myBox.getWidth();
-        double x = myBox.getPos().getX() + width/2;
-        double y = myBox.getPos().getY() + width/2;
+        double x = myBox.getPos().getX() + width / 2;
+        double y = myBox.getPos().getY() + width / 2;
         Point2D thisPt = new Point2D.Double(x, y);
         result.add(thisPt);
-        path.add(new Node(null, Util.round(goal.getX(), 4), Util.round(goal.getY(), 4)));
-        for(Node node : path) {
-            while(thisPt.getX() < node.getX().doubleValue() + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX() + 0.001, thisPt.getY());
+        path.add(new Node(null, Util.round(goal.getX(), 4),
+                Util.round(goal.getY(), 4)));
+        for (Node node : path) {
+            while (thisPt.getX() < node.getX().doubleValue() + width / 2) {
+                thisPt = new Point2D.Double(thisPt.getX() + 0.001,
+                        thisPt.getY());
                 result.add(thisPt);
             }
-            while(thisPt.getX() > node.getX().doubleValue() + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX() - 0.001, thisPt.getY());
+            while (thisPt.getX() > node.getX().doubleValue() + width / 2) {
+                thisPt = new Point2D.Double(thisPt.getX() - 0.001,
+                        thisPt.getY());
                 result.add(thisPt);
             }
-            while(thisPt.getY() < node.getY().doubleValue() + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX(), thisPt.getY() + 0.001);
+            while (thisPt.getY() < node.getY().doubleValue() + width / 2) {
+                thisPt = new Point2D.Double(thisPt.getX(),
+                        thisPt.getY() + 0.001);
                 result.add(thisPt);
             }
-            while(thisPt.getY() > node.getY().doubleValue() + width/2) {
-                thisPt = new Point2D.Double(thisPt.getX(), thisPt.getY() - 0.001);
+            while (thisPt.getY() > node.getY().doubleValue() + width / 2) {
+                thisPt = new Point2D.Double(thisPt.getX(),
+                        thisPt.getY() - 0.001);
                 result.add(thisPt);
             }
         }

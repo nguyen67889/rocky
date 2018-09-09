@@ -1,12 +1,10 @@
 package solution;
 
-import java.awt.geom.Point2D.Double;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import problem.Box;
 import problem.ProblemSpec;
-import problem.RobotConfig;
 import tester.Tester;
 
 import java.awt.geom.Point2D;
@@ -15,51 +13,10 @@ import java.util.List;
 
 public class Solution {
 
-    private ProblemSpec problem;
-
-    private List<RobotConfig> robotPositions;
-    private List<List<Point2D>> boxPositions;
-
-    public Solution(ProblemSpec problem) {
-        this.problem = problem;
-    }
-
-    public void saveSolution(String filename) throws IOException {
-        BufferedWriter input = new BufferedWriter(new FileWriter(filename));
-
-        if (robotPositions.size() != boxPositions.size()) {
-            System.err.println("Saving Solution: Robot positions do not match box positions");
-            System.exit(2);
-        }
-
-        int boxCount = boxPositions.get(0).size();
-        RobotConfig robot;
-        List<Point2D> boxes;
-
-        input.write(robotPositions.size());
-        for (int i = 0; i < robotPositions.size(); i++) {
-            if (boxCount != boxPositions.get(i).size()) {
-                System.err.println("Saving Solution: Box position #" + i + " does not match box count");
-                System.exit(3);
-            }
-
-            robot = robotPositions.get(i);
-            boxes = boxPositions.get(i);
-
-            StringBuilder box = new StringBuilder();
-            for (Point2D position : boxes) {
-                box.append(" " + position.getX() + " " + position.getY());
-            }
-
-            input.write(robot.getPos().getX() + " " + robot.getPos().getY()
-                    + " " + robot.getOrientation() + box.toString());
-
-        }
-    }
-
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.err.println("Invalid Usage: java ProgramName inputFileName outputFileName");
+            System.err.println(
+                    "Invalid Usage: java ProgramName inputFileName outputFileName");
             System.exit(1);
         }
         String inputFile = args[0];
@@ -75,7 +32,8 @@ public class Solution {
         Map<Box, List<Point2D>> movements = calculateMovements(problemSpec);
 
         try {
-            BufferedWriter input = new BufferedWriter(new FileWriter(outputFile));
+            BufferedWriter input = new BufferedWriter(
+                    new FileWriter(outputFile));
             input.write(Formatter.format(problemSpec, movements));
             input.flush();
         } catch (IOException e) {
@@ -91,7 +49,8 @@ public class Solution {
         test(problemSpec);
     }
 
-    private static Map<Box, List<Point2D>> calculateMovements(ProblemSpec problem) {
+    private static Map<Box, List<Point2D>> calculateMovements(
+            ProblemSpec problem) {
         Grid<BigDecimal> grid = new Grid<>(problem);
         Node<BigDecimal>[][] map = grid.getGrid();
 
@@ -120,12 +79,14 @@ public class Solution {
         Tester tester = new Tester(problemSpec);
 
         if (problemSpec.getProblemLoaded() && problemSpec.getSolutionLoaded()) {
-            System.out.println("Has initial state: " + tester.testInitialFirst());
+            System.out
+                    .println("Has initial state: " + tester.testInitialFirst());
             System.out.println("Correct step sizes: " + tester.testStepSize());
             System.out.println("Has no collisions: " + tester.testCollision());
             System.out.println("All pushes valid: " + tester.testPushedBox());
         } else if (problemSpec.getProblemLoaded()) {
-            System.out.println("Problem has been loaded but no solution generated");
+            System.out.println(
+                    "Problem has been loaded but no solution generated");
         } else {
             System.out.println("Problem has not been loaded correctly");
         }

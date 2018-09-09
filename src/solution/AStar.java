@@ -1,7 +1,6 @@
 package solution;
 
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -57,8 +56,10 @@ public class AStar<T extends Number> {
      * @return Heuristic cost of movement
      */
     private int cost(Node<T> start, Node<T> goal) {
-        double xDist = Math.abs(start.getX().doubleValue() - goal.getX().doubleValue());
-        double yDist = Math.abs(start.getY().doubleValue() - goal.getY().doubleValue());
+        double xDist = Math
+                .abs(start.getX().doubleValue() - goal.getX().doubleValue());
+        double yDist = Math
+                .abs(start.getY().doubleValue() - goal.getY().doubleValue());
 
         // Starting heuristic of plain distance
         int heuristic = (int) (xDist + yDist);
@@ -125,10 +126,12 @@ public class AStar<T extends Number> {
         int topCol = Util.roundHalf((x + this.width.doubleValue()) / nodeWidth);
         int topRow = Util.roundHalf((y + this.width.doubleValue()) / nodeWidth);
 
-        Node above = topRow + 1 < grid[0].length ? grid[nodeRow + 1][nodeCol] : null;
+        Node above =
+                topRow + 1 < grid[0].length ? grid[nodeRow + 1][nodeCol] : null;
         Node below = nodeRow - 1 >= 0 ? grid[nodeRow - 1][nodeCol] : null;
         Node left = nodeCol - 1 >= 0 ? grid[nodeRow][nodeCol - 1] : null;
-        Node right = topCol + 1 < grid.length ? grid[nodeRow][nodeCol + 1] : null;
+        Node right =
+                topCol + 1 < grid.length ? grid[nodeRow][nodeCol + 1] : null;
 
         Node[] nearby = {above, below, left, right};
         Set<Node<T>> neighbours = new HashSet<>();
