@@ -115,7 +115,7 @@ public class Tester {
         List<Box> movingBoxes = ps.getMovingBoxes();
         List<List<Box>> movingBoxesPath = ps.getMovingBoxPath();
         for (int i = 0; i < movingBoxes.size(); i++) {
-            if (!movingBoxes.get(i).getPos().equals(movingBoxesPath.get(i).get(0).getPos())) {
+            if (!movingBoxes.get(i).getPos().equals(movingBoxesPath.get(0).get(i).getPos())) {
                 return false;
             }
         }
