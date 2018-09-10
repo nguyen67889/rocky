@@ -1,19 +1,22 @@
 package solution;
 
+import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import problem.Box;
 import problem.ProblemSpec;
 import problem.RobotConfig;
-import tester.Tester;
 
-import java.awt.geom.Point2D;
-import java.io.*;
-import java.util.List;
+import tester.Tester;
 
 public class Solution {
 

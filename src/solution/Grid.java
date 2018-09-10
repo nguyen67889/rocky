@@ -1,12 +1,16 @@
 package solution;
 
-import problem.*;
-
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import problem.Box;
+import problem.MovingBox;
+import problem.MovingObstacle;
+import problem.ProblemSpec;
+import problem.StaticObstacle;
 
 /**
  * A 2D discretized grid of boxes.
