@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import problem.Box;
+import problem.MovingBox;
 import problem.ProblemSpec;
 import problem.RobotConfig;
 
@@ -23,14 +24,29 @@ public class Solution {
     private List<List<Point2D>> boxPositions = new ArrayList<>();
     private List<RobotConfig> robotPositions = new ArrayList<>();
 
+    /**
+     * Return a list of states containing a list of every boxes position.
+     *
+     * @return A list of lists of box positions.
+     */
     public List<List<Point2D>> getBoxPositions() {
         return new ArrayList<>(boxPositions);
     }
 
+    /**
+     * Return a list of states containing a robot configuration.
+     *
+     * @return A list of robot configurations.
+     */
     public List<RobotConfig> getRobotPositions() {
         return new ArrayList<>(robotPositions);
     }
 
+    /**
+     * Solve a problem based on the problem specification and update solution.
+     *
+     * @param problem The problem specification.
+     */
     public void solve(ProblemSpec problem) {
         Map<Box, List<Point2D>> movements = Solution.calculateMovements(problem);
 
@@ -43,18 +59,20 @@ public class Solution {
             Box currentBox = entry.getKey();
 
             Point2D goal = new Point2D.Double(
-                    currentBox.getPos().getX() - currentBox.getWidth(),
-                    currentBox.getPos().getY() - currentBox.getWidth());
+                    currentBox.getPos().getX(),
+                    currentBox.getPos().getY() + currentBox.getWidth());
 
 //            AStar<BigDecimal> aStar = new AStar<>(grid.getGrid(),
 //                    robotConfig.getPos(), goal,
 //                    BigDecimal.valueOf(problem.getRobotWidth()));
 //            List<Node<BigDecimal>> path = aStar.run();
+//            Box robotBox = new MovingBox(robotConfig.getPos(),
+//                    problem.getRobotWidth());
+//            List<Point2D> positions = grid.getCoordPath(path, goal, robotBox);
 //
-//            for (Node<BigDecimal> node : path) {
+//            for (Point2D position : positions) {
 //                robotConfig = new RobotConfig(
-//                        new Double(node.getX().doubleValue(),
-//                                node.getY().doubleValue()),
+//                        new Double(position.getX(), position.getY()),
 //                        robotConfig.getOrientation());
 //
 //                robotPositions.add(robotConfig);
@@ -91,8 +109,12 @@ public class Solution {
 
     private List<Point2D> generateBoxPositions(List<Box> boxes) {
         List<Point2D> result = new ArrayList<>();
+        Point2D position;
         for (Box box : boxes) {
-            result.add(box.getPos());
+            double halfWidth = box.getWidth() / 2;
+            position = new Double(box.getPos().getX() + halfWidth,
+                    box.getPos().getY() + halfWidth);
+            result.add(position);
         }
         return result;
     }
@@ -224,7 +246,7 @@ public class Solution {
         solution.solve(problemSpec);
         System.out.println(solution.getBoxPositions());
 
-        String output = Formatter.format(problemSpec, solution);
+        String output = Formatter.format(solution);
         writeSolution(output, outputFile);
 
         problemSpec = loadProblem(inputFile, outputFile);

@@ -45,7 +45,13 @@ public class Formatter {
         return builder;
     }
 
-    public static String format(ProblemSpec problem, Solution solution) {
+    /**
+     * Format output to a file for a solution to a problem.
+     *
+     * @param solution A solution instance that has been solved.
+     * @return The formatted output.
+     */
+    public static String format(Solution solution) {
         List<List<Point2D>> boxes = solution.getBoxPositions();
         List<RobotConfig> robots = solution.getRobotPositions();
 

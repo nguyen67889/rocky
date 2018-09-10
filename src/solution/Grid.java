@@ -83,7 +83,12 @@ public class Grid<T extends Number> {
 
                 if (newBox.getRect().intersects(xPoint, yPoint,
                         nodeWidth.doubleValue(), nodeWidth.doubleValue())) {
-                    grid[i][j] = new Node<>(box, BigDecimal.valueOf(xPoint),
+                    grid[i][j] = new Node<>(newBox, BigDecimal.valueOf(xPoint),
+                            BigDecimal.valueOf(yPoint));
+                }
+                if (box.getRect().intersects(xPoint, yPoint,
+                        nodeWidth.doubleValue(), nodeWidth.doubleValue())) {
+                    grid[i][j] = new Node<>(null, BigDecimal.valueOf(xPoint),
                             BigDecimal.valueOf(yPoint));
                 }
             }
