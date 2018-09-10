@@ -45,6 +45,26 @@ public class Formatter {
         return builder;
     }
 
+    public static String format(ProblemSpec problem, Solution solution) {
+        List<List<Point2D>> boxes = solution.getBoxPositions();
+        List<RobotConfig> robots = solution.getRobotPositions();
+
+        if (boxes.size() != robots.size()) {
+            throw new RuntimeException("Robot positions and box positions differ");
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(robots.size()).append("\n");
+
+        for (int i = 0; i < robots.size(); i++) {
+            builder.append(Formatter.formatRobot(robots.get(i)));
+            builder.append(Formatter.formatBoxPositions(boxes.get(i)));
+            builder.append("\n");
+        }
+
+        return builder.toString();
+    }
+
     /**
      * Format output to a file for a problem spec and a mapping of box movements.
      *
