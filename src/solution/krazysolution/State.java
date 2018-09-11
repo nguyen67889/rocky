@@ -14,11 +14,15 @@ import java.util.*;
 
 public class State {
     private final static int AREA_SIZE = 10000; //area of the arena
+    private final static int CLOSE = 200;
 
     public List<Box.MBox> mBoxes;
     public List<Box.MObs> mObstacles;
     public List<Box.Obs> sObstacles;
     public Robot robot;
+
+    public Util.Side dir = null;
+    public int current = 0;
 
     public State(ProblemSpec spec) {
         RobotConfig specRobot = spec.getInitialRobotConfig();
@@ -97,23 +101,42 @@ public class State {
 
         while(current.robot.getX() < end.robot.getX()) {
             current = current.saveState();
+            /*Box.MBox aligned = current.getRobotAlignment();
+            if(aligned != null && current.getRobotAlignmentSide(aligned) == Util.Side.LEFT) {
+                aligned.setX(aligned.getX() + 10);
+            }*/
             current.robot.setX(current.robot.getX() + 10);
             states.add(current);
         }
         while(current.robot.getX() > end.robot.getX()) {
             current = current.saveState();
+            /*Box.MBox aligned = current.getRobotAlignment();
+            if(aligned != null && current.getRobotAlignmentSide(aligned) == Util.Side.RIGHT) {
+                aligned.setX(aligned.getX() - 10);
+            }*/
             current.robot.setX(current.robot.getX() - 10);
             states.add(current);
         }
         while(current.robot.getY() < end.robot.getY()) {
             current = current.saveState();
+            /*Box.MBox aligned = current.getRobotAlignment();
+            if(aligned != null && current.getRobotAlignmentSide(aligned) == Util.Side.BOTTOM) {
+                aligned.setY(aligned.getY() + 10);
+            }*/
             current.robot.setY(current.robot.getY() + 10);
             states.add(current);
         }
         while(current.robot.getY() > end.robot.getY()) {
             current = current.saveState();
+            /*Box.MBox aligned = current.getRobotAlignment();
+            if(aligned != null && current.getRobotAlignmentSide(aligned) == Util.Side.TOP) {
+                aligned.setY(aligned.getY() - 10);
+            }*/
             current.robot.setY(current.robot.getY() - 10);
             states.add(current);
+        }
+        if(current.robot.getAngle().doubleValue() == 0 && end.robot.getAngle().intValue() == 135) {
+            current.robot.setAngle(BigDecimal.valueOf(180));
         }
         while(current.robot.getAngle().doubleValue() < end.robot.getAngle().doubleValue()) {
             current = current.saveState();
@@ -125,29 +148,55 @@ public class State {
             current.robot.setAngle(current.robot.getAngle().subtract(BigDecimal.valueOf(0.1)));
             states.add(current);
         }
-        for(int i = 0; i < current.mBoxes.size(); i++) {
-            while(current.mBoxes.get(i).getX() < end.mBoxes.get(i).getX()) {
+
+        return states;
+    }
+
+    public static List<State> interimBoxStates(State start, State end) {
+        List<State> states = new ArrayList<>();
+        State current = start.saveState();
+        states.add(current);
+
+        for (int i = 0; i < current.mBoxes.size(); i++) {
+            while (current.mBoxes.get(i).getX() < end.mBoxes.get(i).getX()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setX(current.mBoxes.get(i).getX() + 10);
+                current.robot.setX(current.robot.getX() + 10);
+                current.dir = Util.Side.LEFT;
+                current.current = i + 1;
+
                 states.add(current);
             }
-            while(current.mBoxes.get(i).getX() > end.mBoxes.get(i).getX()) {
+            while (current.mBoxes.get(i).getX() > end.mBoxes.get(i).getX()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setX(current.mBoxes.get(i).getX() - 10);
+                current.robot.setX(current.robot.getX() - 10);
+                current.dir = Util.Side.RIGHT;
+                current.current = i + 1;
+
                 states.add(current);
             }
-            while(current.mBoxes.get(i).getY() < end.mBoxes.get(i).getY()) {
+            while (current.mBoxes.get(i).getY() < end.mBoxes.get(i).getY()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setY(current.mBoxes.get(i).getY() + 10);
+                current.robot.setY(current.robot.getY() + 10);
+                current.dir = Util.Side.BOTTOM;
+                current.current = i + 1;
+
                 states.add(current);
             }
-            while(current.mBoxes.get(i).getY() > end.mBoxes.get(i).getY()) {
+            while (current.mBoxes.get(i).getY() > end.mBoxes.get(i).getY()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setY(current.mBoxes.get(i).getY() - 10);
+                current.robot.setY(current.robot.getY() - 10);
+                current.dir = Util.Side.TOP;
+                current.current = i + 1;
+
                 states.add(current);
             }
         }
-        //TODO: handle obstacles
+
+        //TODO: handle moving obstacles
 
         return states;
     }
@@ -183,6 +232,58 @@ public class State {
         return false;
     }
 
+    public boolean isRobotOutOfBounds() {
+        return robot.getX1() < 0 || robot.getY1() < 0 || robot.getX2() < 0 || robot.getY2() < 0 ||
+                robot.getX1() >= AREA_SIZE || robot.getX2() >= AREA_SIZE ||
+                robot.getY1() >= AREA_SIZE || robot.getY2() >= AREA_SIZE;
+    }
+
+    public Box.MBox getRobotAlignment() {
+        if(robot.getAngle().intValue() != 90 && robot.getAngle().intValue() != 0) {
+            return null; //robot isn't aligned - why bother?
+        }
+
+        int[] firstXs = robot.getFirstXs();
+        int[] firstYs = robot.getFirstYs();
+        int[] lastXs = robot.getLastXs();
+        int[] lastYs = robot.getLastYs();
+
+        for(Box.MBox mBox : mBoxes) {
+            boolean alignedFirst = true;
+            boolean alignedLast = true;
+            for(int i = 0; i < 4; i++) {
+                alignedFirst = alignedFirst && mBox.getRect().contains(new Point2D.Double(firstXs[i], firstYs[i]));
+                alignedLast = alignedLast && mBox.getRect().contains(new Point2D.Double(lastXs[i], lastYs[i]));
+            }
+            if(alignedFirst || alignedLast) {
+                return mBox;
+            }
+        }
+        return null;
+
+        //TODO: handle movable obstacles
+    }
+
+    public Util.Side getRobotAlignmentSide(Box box) {
+
+        int[] firstXs = robot.getFirstXs();
+        int[] firstYs = robot.getFirstYs();
+
+        Point2D[] pts = {new Point2D.Double(firstXs[1], firstYs[1]),
+            new Point2D.Double(firstXs[2], firstYs[2])};
+
+        if(box.getBottomEdge().contains(pts[0]) && box.getBottomEdge().contains(pts[1])) {
+            return Util.Side.BOTTOM;
+        } else if(box.getLeftEdge().contains(pts[0]) && box.getLeftEdge().contains(pts[1])) {
+            return Util.Side.LEFT;
+        } else if(box.getRightEdge().contains(pts[0]) && box.getLeftEdge().contains(pts[1])) {
+            return Util.Side.RIGHT;
+        } else if(box.getTopEdge().contains(pts[0]) && box.getLeftEdge().contains(pts[1])) {
+            return Util.Side.TOP;
+        }
+        return null;
+    }
+
     public boolean isBoxCollision(Box box) {
         if(box.getX() < 0 || box.getY() < 0 || box.getX() + box.getWidth() > AREA_SIZE ||
                 box.getY() + box.getHeight() > AREA_SIZE) {
@@ -190,17 +291,17 @@ public class State {
         }
 
         for(Box.MBox mBox : mBoxes) {
-            if(!box.equals(mBox) && mBox.getRect().intersects(box.getRect())) {
+            if(!box.equals(mBox) && mBox.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
         }
         for(Box.MObs mObs : mObstacles) {
-            if(!box.equals(mObs) && mObs.getRect().intersects(box.getRect())) {
+            if(!box.equals(mObs) && mObs.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
         }
         for(Box.Obs obs : sObstacles) {
-            if(!box.equals(obs) && obs.getRect().intersects(box.getRect())) {
+            if(!box.equals(obs) && obs.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
         }
@@ -224,7 +325,10 @@ public class State {
             sObstacles.add(obs.copy());
         }
 
-        return new State(robot, mBoxes, mObstacles, sObstacles);
+        State newState = new State(robot, mBoxes, mObstacles, sObstacles);
+        newState.dir = dir;
+        newState.current = current;
+        return newState;
     }
 
     @Override
@@ -239,7 +343,7 @@ public class State {
 
     @Override
     public String toString() {
-        return mBoxes.get(0).toString();
+        return robot.toString();
     }
 
     public boolean equals(Object o) {
@@ -251,5 +355,21 @@ public class State {
                 other.mObstacles.containsAll(mObstacles) && mObstacles.containsAll(other.mObstacles) &&
                 other.sObstacles.containsAll(sObstacles) && sObstacles.containsAll(other.sObstacles) &&
                 other.robot.equals(robot);
+    }
+
+    public boolean isCloseBox(State state) {
+        for(int i = 0; i < mBoxes.size(); i++) {
+            if(Math.abs(mBoxes.get(i).getX() - state.mBoxes.get(i).getX()) > CLOSE ||
+                    Math.abs(mBoxes.get(i).getY() - state.mBoxes.get(i).getY()) > CLOSE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isCloseRobot(State state) {
+        return Math.abs(robot.getX() - state.robot.getX()) <= CLOSE &&
+                Math.abs(robot.getY() - state.robot.getY()) <= CLOSE &&
+                robot.getAngle().intValue() == state.robot.getAngle().intValue();
     }
 }

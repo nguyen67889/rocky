@@ -1,9 +1,10 @@
 package solution.krazysolution;
 
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 
 public abstract class Box {
-    public static final int DIST = 100;
+    public static final int DIST = 200;
 
     int x;
     int y;
@@ -28,6 +29,28 @@ public abstract class Box {
 
     public Rectangle2D getRect() {
         return new Rectangle2D.Double(x, y, width, height);
+    }
+
+    public Rectangle2D getExpandedRect() {
+        //int expanded = (int)Math.ceil(width/Math.sqrt(2));
+        int expanded = 200;
+        return new Rectangle2D.Double(x - expanded, y - expanded, width + 2*expanded, height + 2*expanded);
+    }
+
+    public Rectangle2D getBottomEdge() {
+        return new Rectangle2D.Double(x, y, width, height/2);
+    }
+
+    public Rectangle2D getTopEdge() {
+        return new Rectangle2D.Double(x, y + height/2, width, height/2);
+    }
+
+    public Rectangle2D getLeftEdge() {
+        return new Rectangle2D.Double(x, y, width/2, height);
+    }
+
+    public Rectangle2D getRightEdge() {
+        return new Rectangle2D.Double(x + width/2, y, width/2, height);
     }
 
     public abstract Box copy();

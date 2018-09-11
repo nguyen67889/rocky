@@ -1,10 +1,15 @@
 package solution.krazysolution;
 
+import com.sun.corba.se.impl.orbutil.graph.Graph;
 import problem.ProblemSpec;
+import solution.Util;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 public class StateGraph {
+
+    public final static int CLOSE = 200;
 
     public static class StateNode {
         public Set<StateNode> connected;
@@ -61,19 +66,27 @@ public class StateGraph {
 
     private int cost(StateNode start, StateNode end) {
         //TODO modify to be better
-        int revCost = 0;
+        int cost = 0;
         for(int i = 0; i < start.state.mBoxes.size(); i++) {
             Box.MBox startBox = start.state.mBoxes.get(i);
             Box.MBox endBox = end.state.mBoxes.get(i);
-            int distance = Math.abs(startBox.getX() - endBox.getX()) +
+            cost += Math.abs(startBox.getX() - endBox.getX()) +
                     Math.abs(startBox.getY() - endBox.getY());
-            int pow = (int)(Math.pow(0.999, distance) * 1000);
-            revCost += pow;
-            if(distance == 0) {
-                revCost += 1000;
+            if(startBox.getY() != endBox.getY() && startBox.getX() != endBox.getX()) {
+                cost += 100;
             }
         }
-        return Integer.MAX_VALUE - revCost;
+        if(!start.state.robot.getAngle().equals(goal.state.robot.getAngle())) {
+            cost += 100;
+        }
+        return cost;
+    }
+
+    private int nextCost(StateNode start, StateNode end) {
+        if(start.state.dir != end.state.dir) {
+            return 2;
+        }
+        return 1;
     }
 
     private Set<State> getRotationStates(State state) {
@@ -82,8 +95,12 @@ public class StateGraph {
         s1.robot.rotateClockwise();
         State s2 = state.saveState();
         s2.robot.rotateAntiClockwise();
-        states.add(s1);
-        states.add(s2);
+        if (!s1.isRobotCollision()) {
+            states.add(s1);
+        }
+        if (!s2.isRobotCollision()) {
+            states.add(s2);
+        }
         return states;
     }
 
@@ -112,17 +129,85 @@ public class StateGraph {
         return states;
     }
 
+    private Set<State> getAllMovementStates(State state) {
+        Set<State> states = new HashSet<>();
+        State s1 = state.saveState();
+        s1.robot.moveDown();
+        State s2 = state.saveState();
+        s2.robot.moveUp();
+        State s3 = state.saveState();
+        s3.robot.moveLeft();
+        State s4 = state.saveState();
+        s4.robot.moveRight();
+
+        if(!s1.isRobotOutOfBounds()) {
+            if(s1.isRobotCollision()) {
+                Box.MBox aligned = s1.getRobotAlignment();
+                if(aligned != null) {
+                    aligned.setY(s1.robot.getY());
+                    states.add(s1);
+                }
+            } else {
+                states.add(s1);
+            }
+        }
+
+        if(!s2.isRobotOutOfBounds()) {
+            if(s2.isRobotCollision()) {
+                Box.MBox aligned = s2.getRobotAlignment();
+                if(aligned != null) {
+                    aligned.setY(s2.robot.getY());
+                    states.add(s2);
+                }
+            } else {
+                states.add(s2);
+            }
+        }
+
+        if(!s3.isRobotOutOfBounds()) {
+            if(s3.isRobotCollision()) {
+                Box.MBox aligned = s3.getRobotAlignment();
+                if(aligned != null) {
+                    aligned.setY(s3.robot.getX());
+                    states.add(s3);
+                }
+            } else {
+                states.add(s3);
+            }
+        }
+
+        if(!s4.isRobotOutOfBounds()) {
+            if(s4.isRobotCollision()) {
+                Box.MBox aligned = s4.getRobotAlignment();
+                if(aligned != null) {
+                    aligned.setY(s4.robot.getX());
+                    states.add(s4);
+                }
+            } else {
+                states.add(s4);
+            }
+        }
+
+        //TODO: handle misalignment with goal
+        return states;
+    }
+
     private Set<State> getBoxMovementStates(State state) {
         Set<State> states = new HashSet<>();
         for(int i = 0; i < state.mBoxes.size(); i++) {
             State s1 = state.saveState();
             s1.mBoxes.get(i).moveDown();
+            s1.dir = Util.Side.TOP;
             State s2 = state.saveState();
+            s2.dir = Util.Side.BOTTOM;
             s2.mBoxes.get(i).moveUp();
             State s3 = state.saveState();
+            s3.dir = Util.Side.RIGHT;
             s3.mBoxes.get(i).moveLeft();
             State s4 = state.saveState();
+            s4.dir = Util.Side.LEFT;
             s4.mBoxes.get(i).moveRight();
+            s1.current = s2.current = s3.current = s4.current = i + 1;
             if (!s1.isBoxCollision(s1.mBoxes.get(i))) {
                 states.add(s1);
             }
@@ -139,12 +224,17 @@ public class StateGraph {
         for(int i = 0; i < state.mObstacles.size(); i++) {
             State s1 = state.saveState();
             s1.mObstacles.get(i).moveDown();
+            s1.dir = Util.Side.TOP;
             State s2 = state.saveState();
             s2.mObstacles.get(i).moveUp();
+            s2.dir = Util.Side.BOTTOM;
             State s3 = state.saveState();
             s3.mObstacles.get(i).moveLeft();
+            s3.dir = Util.Side.RIGHT;
             State s4 = state.saveState();
             s4.mObstacles.get(i).moveRight();
+            s4.dir = Util.Side.LEFT;
+            s1.current = s2.current = s3.current = s4.current = -(i + 1);
             if (!s1.isBoxCollision(s1.mObstacles.get(i))) {
                 states.add(s1);
             }
@@ -164,11 +254,15 @@ public class StateGraph {
     private Set<StateNode> getNeighbours(StateNode node) {
         Set<State> states = new HashSet<>();
         Set<StateNode> result = new HashSet<>();
-        if(type == GraphType.ROBOT || type == GraphType.ALL) {
+        if(type == GraphType.ROBOT) {
             states.addAll(getRotationStates(node.state));
             states.addAll(getMovementStates(node.state));
         }
-        if(type == GraphType.BOXES || type == GraphType.ALL) {
+        if(type == GraphType.ALL) {
+            states.addAll(getRotationStates(node.state));
+            states.addAll(getAllMovementStates(node.state));
+        }
+        if(type == GraphType.BOXES) {
             states.addAll(getBoxMovementStates(node.state));
         }
         for (State state : states) {
@@ -195,7 +289,17 @@ public class StateGraph {
                 }
             }
 
-            if (current.equals(goal)) {
+            boolean isClose = false;
+            switch(type) {
+                case BOXES:
+                    isClose = current.state.isCloseBox(goal.state);
+                    break;
+                case ROBOT:
+                    isClose = current.state.isCloseRobot(goal.state);
+                    break;
+            }
+
+            if (isClose) {
                 List<StateNode> path = new ArrayList<>();
                 while (current.parent != null) {
                     path.add(0, current);
@@ -210,7 +314,7 @@ public class StateGraph {
             closed.add(current);
 
             for (StateNode neighbour : getNeighbours(current)) {
-                int nextG = current.g + 1;
+                int nextG = current.g + nextCost(current, neighbour);
                 if (nextG < neighbour.g) {
                     open.remove(neighbour);
                     closed.remove(neighbour);
@@ -233,15 +337,34 @@ public class StateGraph {
         spec.loadProblem("problems/inputK.txt");
 
         State startState = new State(spec);
+        startState.robot.setX(2000);
+        startState.robot.setY(0);
+        startState.robot.setAngle(BigDecimal.ZERO);
         State endState = startState.saveState();
-        State goalState = endState.saveState(); //the end state after alignment adjustments
+        endState.robot.setX(2500);
+        endState.robot.setY(5000);
+        endState.robot.setAngle(BigDecimal.ZERO);
+        System.out.println(startState);
+        System.out.println(endState);
+
+        StateGraph graph = new StateGraph(new StateNode(startState), new StateNode(endState), GraphType.ROBOT);
+
+        List<StateNode> allStates = graph.aStar();
+        List<State> interimStates = new ArrayList<>();
+        System.out.println("gotAllStates");
+        for(int i = 0; i < allStates.size() - 1; i++) {
+            interimStates.addAll(State.interimStates(allStates.get(i).state, allStates.get(i + 1).state));
+            //interimStates.add(allStates.get(i).state);
+        }
+        interimStates.addAll(State.interimStates(interimStates.get(interimStates.size() - 1), endState));
+        System.out.println(State.outputString(interimStates));
+
+       /* State startState = new State(spec);
+        State endState = startState.saveState();
         for(int i = 0; i < startState.mBoxes.size(); i++) {
             Box.MBox startBox = startState.mBoxes.get(i);
-            Box.MBox goalBox = startBox.gridifyGoal();
-            endState.mBoxes.get(i).setX(goalBox.getX());
-            endState.mBoxes.get(i).setY(goalBox.getY());
-            goalState.mBoxes.get(i).setX(startBox.getXGoal());
-            goalState.mBoxes.get(i).setY(startBox.getYGoal());
+            endState.mBoxes.get(i).setX(startBox.getXGoal());
+            endState.mBoxes.get(i).setY(startBox.getYGoal());
         }
 
         StateNode startNode = new StateNode(startState);
@@ -252,9 +375,10 @@ public class StateGraph {
         List<State> interimStates = new ArrayList<>();
         System.out.println("gotAllStates");
         for(int i = 0; i < allStates.size() - 1; i++) {
-            interimStates.addAll(State.interimStates(allStates.get(i).state, allStates.get(i + 1).state));
+            interimStates.addAll(State.interimBoxStates(allStates.get(i).state, allStates.get(i + 1).state));
+            //interimStates.add(allStates.get(i).state);
         }
-        interimStates.addAll(State.interimStates(endState, goalState));
-        System.out.println(State.outputString(interimStates));
+        interimStates.addAll(State.interimBoxStates(interimStates.get(interimStates.size() - 1), endState));
+        System.out.println(State.outputString(interimStates));*/
     }
 }
