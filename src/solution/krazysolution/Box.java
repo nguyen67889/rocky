@@ -4,7 +4,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 
 public abstract class Box {
-    public static final int DIST = 400;
+    public static final int DIST = 100;
 
     int x;
     int y;

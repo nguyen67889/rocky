@@ -9,8 +9,6 @@ import java.util.*;
 
 public class StateGraph {
 
-    public final static int CLOSE = 200;
-
     public static class StateNode {
         public Set<StateNode> connected;
         public State state;
@@ -53,15 +51,17 @@ public class StateGraph {
     private StateNode start;
     private StateNode goal;
     private GraphType type;
+    private int index;
 
-    public StateGraph(StateNode start, StateNode goal, GraphType type) {
+    public StateGraph(StateNode start, StateNode goal, GraphType type, int boxIndex) {
         this.start = start;
         this.goal = goal;
         this.type = type;
+        this.index = boxIndex;
     }
 
     public StateGraph(StateNode start, StateNode goal) {
-        this(start, goal, GraphType.ALL);
+        this(start, goal, GraphType.ALL, -1);
     }
 
     private int cost(StateNode start, StateNode end) {
@@ -198,7 +198,13 @@ public class StateGraph {
 
     private Set<State> getBoxMovementStates(State state) {
         Set<State> states = new HashSet<>();
-        for(int i = 0; i < state.mBoxes.size(); i++) {
+        int min = 0;
+        int max = state.mBoxes.size();
+        if(index > -1) {
+            min = index;
+            max = index + 1;
+        }
+        for(int i = min; i < max; i++) {
             State s1 = state.saveState();
             s1.mBoxes.get(i).moveDown();
             s1.dir = Util.Side.TOP;
@@ -225,7 +231,7 @@ public class StateGraph {
                 states.add(s4);
             }
         }
-        for(int i = 0; i < state.mObstacles.size(); i++) {
+        /*for(int i = 0; i < state.mObstacles.size(); i++) {
             State s1 = state.saveState();
             s1.mObstacles.get(i).moveDown();
             s1.dir = Util.Side.TOP;
@@ -251,7 +257,7 @@ public class StateGraph {
             if (!s4.isBoxCollision(s4.mObstacles.get(i))) {
                 states.add(s4);
             }
-        }
+        }*/
         return states;
     }
 
@@ -341,6 +347,19 @@ public class StateGraph {
         spec.loadProblem("problems/inputK.txt");
 
         State startState = new State(spec);
+        State gState1 = startState.saveState();
+        Box.MBox box = gState1.mBoxes.get(0);
+        box.setX(box.getXGoal());
+        box.setY(box.getYGoal());
+        List<StateGraph.StateNode> nodes = new StateGraph(new StateNode(startState), new StateNode(gState1),
+                GraphType.BOXES, 0).aStar();
+        List<State> path = new ArrayList<>();
+        for(StateGraph.StateNode node : nodes) {
+            path.add(node.state);
+        }
+        System.out.println(State.outputString(path));
+
+        /*State startState = new State(spec);
         startState.robot.setX(2000);
         startState.robot.setY(0);
         startState.robot.setAngle(BigDecimal.ZERO);

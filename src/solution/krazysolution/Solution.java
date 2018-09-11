@@ -24,13 +24,144 @@ public class Solution {
     }
 
     public void run() {
-        List<State> states = stateBuilder();
+        List<State> states = generateStates(new State(spec));
         try {
             write(State.outputString(states), "problems/outputK.txt");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
         System.out.println("done!");
+    }
+
+    private List<State> getBoxStates(State startState, int index) {
+        State goalState = startState.saveState();
+        Box.MBox box = goalState.mBoxes.get(index);
+        box.setX(box.getXGoal());
+        box.setY(box.getYGoal());
+        List<StateGraph.StateNode> nodes = new StateGraph(new StateGraph.StateNode(startState),
+                new StateGraph.StateNode(goalState), StateGraph.GraphType.BOXES, index).aStar();
+
+        List<State> path = new ArrayList<>();
+        for(int i = 0; i < nodes.size() - 1; i++) {
+            path.addAll(State.interimBoxStates(nodes.get(i).state, nodes.get(i + 1).state));
+        }
+        path.addAll(State.interimBoxStates(path.get(path.size() - 1), goalState));
+
+        return path;
+    }
+
+    private List<State> getAllBoxStates(State startState) {
+        //TODO: handle collisions :'(
+        State goalState = startState.saveState();
+        State prevState = startState.saveState();
+        List<State> states = new ArrayList<>();
+
+        for(int i = 0; i < startState.mBoxes.size(); i++) {
+            goalState.mBoxes.get(i).setX(goalState.mBoxes.get(i).getXGoal());
+            goalState.mBoxes.get(i).setY(goalState.mBoxes.get(i).getYGoal());
+
+            states.addAll(getBoxStates(prevState, i));
+            prevState = states.get(states.size() - 1);
+        }
+
+        return states;
+    }
+
+    private List<State> robotStateToState(State startState, int index, Util.Side alignment) {
+        int x = 0, y = 0;
+        BigDecimal a = null;
+        Box.MBox box = startState.mBoxes.get(index - 1); //TODO handle obstacles
+
+        switch(alignment) {
+            case BOTTOM:
+                x = box.getX() + box.getWidth()/2;
+                y = box.getY();
+                a = BigDecimal.ZERO;
+                break;
+            case TOP:
+                x = box.getX() + box.getWidth()/2;
+                y = box.getY() + box.getHeight();
+                a = BigDecimal.ZERO;
+                break;
+            case LEFT:
+                x = box.getX();
+                y = box.getY() + box.getHeight()/2;
+                a = BigDecimal.valueOf(90);
+                break;
+            case RIGHT:
+                x = box.getX() + box.getWidth();
+                y = box.getY() + box.getHeight()/2;
+                a = BigDecimal.valueOf(90);
+                break;
+        }
+
+        State goalState = startState.saveState();
+        goalState.robot.setX(x);
+        goalState.robot.setY(y);
+        goalState.robot.setAngle(a);
+
+        List<StateGraph.StateNode> nodes = new StateGraph(new StateGraph.StateNode(startState),
+                new StateGraph.StateNode(goalState), StateGraph.GraphType.ROBOT, -1).aStar();
+        List<State> path = new ArrayList<>();
+
+        for(int i = 0; i < nodes.size() - 1; i++) {
+            path.addAll(State.interimStates(nodes.get(i).state, nodes.get(i + 1).state));
+        }
+
+        path.addAll(State.interimStates(path.get(path.size() - 1), goalState));
+
+        return path;
+    }
+
+    private List<State> generateStates(State startState) {
+        List<State> path = new ArrayList<>();
+        List<State> boxStates = getAllBoxStates(startState);
+
+        Util.Side side = null;
+        int index = 0;
+
+        for(int i = 0; i < boxStates.size() - 1; i++) {
+            State currentState = boxStates.get(i);
+            State nextState = boxStates.get(i + 1);
+
+            if(currentState.dir != null && currentState.current != 0) {
+                Box.MBox box = currentState.mBoxes.get(currentState.current - 1);
+                State prevState = path.get(path.size() - 1);
+                //TODO: handle moving boxes (negative index)
+                switch(currentState.dir) {
+                    case RIGHT:
+                        currentState.robot.setX(box.getX() + box.getWidth());
+                        currentState.robot.setY(prevState.robot.getY());
+                        currentState.robot.setAngle(prevState.robot.getAngle());
+                        break;
+                    case LEFT:
+                        currentState.robot.setX(box.getX());
+                        currentState.robot.setY(prevState.robot.getY());
+                        currentState.robot.setAngle(prevState.robot.getAngle());
+                        break;
+                    case TOP:
+                        currentState.robot.setY(box.getY() + box.getHeight());
+                        currentState.robot.setX(prevState.robot.getX());
+                        currentState.robot.setAngle(prevState.robot.getAngle());
+                        break;
+                    case BOTTOM:
+                        currentState.robot.setY(box.getY());
+                        currentState.robot.setX(prevState.robot.getX());
+                        currentState.robot.setAngle(prevState.robot.getAngle());
+                        break;
+                }
+            }
+            path.add(currentState);
+
+            if(nextState.dir != side || nextState.current != index) {
+                System.out.println(currentState + " to " + nextState);
+                side = nextState.dir;
+                index = nextState.current;
+                path.addAll(robotStateToState(currentState, index, side));
+            }
+        }
+
+        return path;
     }
 
     private static void write(String str, String file) throws IOException {
@@ -91,7 +222,7 @@ public class Solution {
         System.out.println(robotGoalState);
 
         StateGraph robotGraph = new StateGraph(new StateGraph.StateNode(currentState),
-                new StateGraph.StateNode(robotGoalState), StateGraph.GraphType.ROBOT);
+                new StateGraph.StateNode(robotGoalState), StateGraph.GraphType.ROBOT, -1);
 
         List<StateGraph.StateNode> robotStates = robotGraph.aStar();
         if(robotStates == null) {
@@ -124,18 +255,35 @@ public class Solution {
 
         State startState = new State(spec);
         State endState = startState.saveState();
+        State prevState = startState.saveState();
+
+        List<StateGraph.StateNode> allStates = new ArrayList<>();
 
         for(int i = 0; i < startState.mBoxes.size(); i++) {
             Box.MBox startBox = startState.mBoxes.get(i);
             endState.mBoxes.get(i).setX(startBox.getXGoal());
             endState.mBoxes.get(i).setY(startBox.getYGoal());
+
+            State thisState = prevState.saveState();
+            thisState.mBoxes.get(i).setX(startBox.getXGoal());
+            StateGraph graph = new StateGraph(new StateGraph.StateNode(prevState),
+                    new StateGraph.StateNode(thisState), StateGraph.GraphType.BOXES, i);
+
+            List<StateGraph.StateNode> states = graph.aStar();
+            if(states != null) {
+                allStates.addAll(graph.aStar());
+            }
+            System.out.println("+1");
         }
 
-        StateGraph graph = new StateGraph(new StateGraph.StateNode(startState),
-                new StateGraph.StateNode(endState), StateGraph.GraphType.BOXES);
-        List<StateGraph.StateNode> allStates = graph.aStar();
+        State lastState = allStates.get(allStates.size() - 1).state;
 
-        for(State state : State.interimBoxStates(allStates.get(allStates.size() - 1).state, endState)) {
+        for(int i = 0; i < startState.mObstacles.size(); i++) {
+            endState.mObstacles.get(i).setX(lastState.mObstacles.get(i).getX());
+            endState.mObstacles.get(i).setY(lastState.mObstacles.get(i).getY());
+        }
+
+        for(State state : State.interimBoxStates(lastState, endState)) {
             allStates.add(new StateGraph.StateNode(state));
         }
 
@@ -181,6 +329,6 @@ public class Solution {
     }
 
     public static void main(String[] args) {
-        new Solution("problems/input1.txt").run();
+        new Solution("problems/inputK.txt").run();
     }
 }

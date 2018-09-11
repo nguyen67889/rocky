@@ -170,7 +170,7 @@ public class State {
             while (current.mBoxes.get(i).getX() < end.mBoxes.get(i).getX()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setX(current.mBoxes.get(i).getX() + 10);
-                current.robot.setX(current.robot.getX() + 10);
+                //current.robot.setX(current.robot.getX() + 10);
                 current.dir = Util.Side.LEFT;
                 current.current = i + 1;
 
@@ -179,7 +179,7 @@ public class State {
             while (current.mBoxes.get(i).getX() > end.mBoxes.get(i).getX()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setX(current.mBoxes.get(i).getX() - 10);
-                current.robot.setX(current.robot.getX() - 10);
+                //current.robot.setX(current.robot.getX() - 10);
                 current.dir = Util.Side.RIGHT;
                 current.current = i + 1;
 
@@ -188,7 +188,7 @@ public class State {
             while (current.mBoxes.get(i).getY() < end.mBoxes.get(i).getY()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setY(current.mBoxes.get(i).getY() + 10);
-                current.robot.setY(current.robot.getY() + 10);
+                //current.robot.setY(current.robot.getY() + 10);
                 current.dir = Util.Side.BOTTOM;
                 current.current = i + 1;
 
@@ -197,7 +197,7 @@ public class State {
             while (current.mBoxes.get(i).getY() > end.mBoxes.get(i).getY()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setY(current.mBoxes.get(i).getY() - 10);
-                current.robot.setY(current.robot.getY() - 10);
+                //current.robot.setY(current.robot.getY() - 10);
                 current.dir = Util.Side.TOP;
                 current.current = i + 1;
 

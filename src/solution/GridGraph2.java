@@ -93,9 +93,6 @@ public class GridGraph2 {
     }
 
 
-
-
-
     public List<Point2D> getCoordPath(List<Node> path, Point2D goal, Box myBox) {
         List<Point2D> result = new ArrayList<>();
         double width = myBox.getWidth();
