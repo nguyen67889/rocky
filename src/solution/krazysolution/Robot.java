@@ -3,7 +3,7 @@ package solution.krazysolution;
 import java.math.BigDecimal;
 
 public class Robot {
-    public static final int DIST = 200;
+    public static final int DIST = 100;
     public static final BigDecimal ANGLE = BigDecimal.valueOf(45);
 
     private int x;

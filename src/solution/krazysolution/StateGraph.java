@@ -83,10 +83,14 @@ public class StateGraph {
     }
 
     private int nextCost(StateNode start, StateNode end) {
+        int result = 1;
         if(start.state.dir != end.state.dir) {
-            return 2;
+            result += 1000;
         }
-        return 1;
+        if(start.state.current != end.state.current) {
+            result += 10000;
+        }
+        return result;
     }
 
     private Set<State> getRotationStates(State state) {

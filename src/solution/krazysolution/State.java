@@ -135,8 +135,14 @@ public class State {
             current.robot.setY(current.robot.getY() - 10);
             states.add(current);
         }
-        if(current.robot.getAngle().doubleValue() == 0 && end.robot.getAngle().intValue() == 135) {
+        if(current.robot.getAngle().intValue() >= 180) {
+            current.robot.setAngle(current.robot.getAngle().subtract(BigDecimal.valueOf(180)));
+        }
+        if(current.robot.getAngle().intValue() == 0 && end.robot.getAngle().intValue() == 135) {
             current.robot.setAngle(BigDecimal.valueOf(180));
+        }
+        if(current.robot.getAngle().intValue() == 135 && end.robot.getAngle().intValue() == 0) {
+            end.robot.setAngle(BigDecimal.valueOf(180));
         }
         while(current.robot.getAngle().doubleValue() < end.robot.getAngle().doubleValue()) {
             current = current.saveState();
@@ -147,6 +153,9 @@ public class State {
             current = current.saveState();
             current.robot.setAngle(current.robot.getAngle().subtract(BigDecimal.valueOf(0.1)));
             states.add(current);
+        }
+        if(current.robot.getAngle().intValue() >= 180) {
+            current.robot.setAngle(current.robot.getAngle().subtract(BigDecimal.valueOf(180)));
         }
 
         return states;
@@ -196,7 +205,44 @@ public class State {
             }
         }
 
-        //TODO: handle moving obstacles
+        for (int i = 0; i < current.mObstacles.size(); i++) {
+            while (current.mObstacles.get(i).getX() < end.mObstacles.get(i).getX()) {
+                current = current.saveState();
+                current.mObstacles.get(i).setX(current.mObstacles.get(i).getX() + 10);
+                current.robot.setX(current.robot.getX() + 10);
+                current.dir = Util.Side.LEFT;
+                current.current = i + 1;
+
+                states.add(current);
+            }
+            while (current.mObstacles.get(i).getX() > end.mObstacles.get(i).getX()) {
+                current = current.saveState();
+                current.mObstacles.get(i).setX(current.mObstacles.get(i).getX() - 10);
+                current.robot.setX(current.robot.getX() - 10);
+                current.dir = Util.Side.RIGHT;
+                current.current = i + 1;
+
+                states.add(current);
+            }
+            while (current.mObstacles.get(i).getY() < end.mObstacles.get(i).getY()) {
+                current = current.saveState();
+                current.mObstacles.get(i).setY(current.mObstacles.get(i).getY() + 10);
+                current.robot.setY(current.robot.getY() + 10);
+                current.dir = Util.Side.BOTTOM;
+                current.current = i + 1;
+
+                states.add(current);
+            }
+            while (current.mObstacles.get(i).getY() > end.mObstacles.get(i).getY()) {
+                current = current.saveState();
+                current.mObstacles.get(i).setY(current.mObstacles.get(i).getY() - 10);
+                current.robot.setY(current.robot.getY() - 10);
+                current.dir = Util.Side.TOP;
+                current.current = i + 1;
+
+                states.add(current);
+            }
+        }
 
         return states;
     }

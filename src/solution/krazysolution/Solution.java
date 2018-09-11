@@ -46,6 +46,9 @@ public class Solution {
         System.out.println("yes");
         Util.Side dir = nextState.dir;
         int index = nextState.current;
+        if(dir == null) {
+            return result;
+        }
 
         Box box = null;
         if(index > 0) {
@@ -96,7 +99,6 @@ public class Solution {
             throw new RuntimeException("No path found to next obstacle");
         }
         List<State> interimRobotStates = new ArrayList<>();
-        System.out.println(robotStates);
         for(int j = 0; j < robotStates.size() - 1; j++) {
             interimRobotStates.addAll(State.interimStates(robotStates.get(j).state,
                     robotStates.get(j + 1).state));
@@ -122,6 +124,7 @@ public class Solution {
 
         State startState = new State(spec);
         State endState = startState.saveState();
+
         for(int i = 0; i < startState.mBoxes.size(); i++) {
             Box.MBox startBox = startState.mBoxes.get(i);
             endState.mBoxes.get(i).setX(startBox.getXGoal());
@@ -130,7 +133,6 @@ public class Solution {
 
         StateGraph graph = new StateGraph(new StateGraph.StateNode(startState),
                 new StateGraph.StateNode(endState), StateGraph.GraphType.BOXES);
-
         List<StateGraph.StateNode> allStates = graph.aStar();
 
         for(State state : State.interimBoxStates(allStates.get(allStates.size() - 1).state, endState)) {
@@ -179,6 +181,6 @@ public class Solution {
     }
 
     public static void main(String[] args) {
-        new Solution("problems/inputK.txt").run();
+        new Solution("problems/input1.txt").run();
     }
 }

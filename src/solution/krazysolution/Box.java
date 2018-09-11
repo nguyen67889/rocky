@@ -4,7 +4,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 
 public abstract class Box {
-    public static final int DIST = 200;
+    public static final int DIST = 400;
 
     int x;
     int y;
@@ -33,7 +33,7 @@ public abstract class Box {
 
     public Rectangle2D getExpandedRect() {
         //int expanded = (int)Math.ceil(width/Math.sqrt(2));
-        int expanded = 200;
+        int expanded = 400;
         return new Rectangle2D.Double(x - expanded, y - expanded, width + 2*expanded, height + 2*expanded);
     }
 
