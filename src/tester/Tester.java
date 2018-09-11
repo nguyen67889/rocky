@@ -52,14 +52,14 @@ public class Tester {
     public void testSolution() {
         boolean pass = true;
         if (ps.getProblemLoaded() && ps.getSolutionLoaded()) {
-            pass = pass && testInitialFirst();
-            pass = pass && testStepSize();
-            pass = pass && testCollision();
-            pass = pass && testPushedBox();
+            pass = testInitialFirst() && pass;
+            pass = testStepSize() && pass;
+            pass = testCollision() && pass;
+            pass = testPushedBox() && pass;
         }
         if (pass) {
             int count = countGoals();
-            System.out.println(count + "out of " + ps.getMovingBoxes().size() + " goals reached");
+            System.out.println(count + " out of " + ps.getMovingBoxes().size() + " goals reached");
         }
     }
 
@@ -71,7 +71,7 @@ public class Tester {
         List<Box> finalState = ps.getMovingBoxPath().get(ps.getMovingBoxPath().size() - 1);
         int count = 0;
         for (int i = 0; i < finalState.size(); i++){
-            if (finalState.get(i).getPos() == ps.getMovingBoxEndPositions().get(i)) {
+            if (finalState.get(i).getPos().distance(ps.getMovingBoxEndPositions().get(i)) <= MAX_ERROR) {
                 count++;
             }
         }
@@ -123,7 +123,7 @@ public class Tester {
         List<Box> movingObstacles = ps.getMovingObstacles();
         List<List<Box>> movingObstaclePath = ps.getMovingObstaclePath();
         for (int i = 0; i < movingObstacles.size(); i++) {
-            if (!movingObstacles.get(i).getPos().equals(movingObstaclePath.get(i).get(0).getPos())) {
+            if (!movingObstacles.get(i).getPos().equals(movingObstaclePath.get(0).get(i).getPos())) {
                 return false;
             }
         }
@@ -147,6 +147,7 @@ public class Tester {
                 System.out.println("Step size over 0.001 at step " + i);
                 pass = false;
             }
+            last = robotPath.get(i);
         }
 
         if (pass) {
@@ -164,11 +165,10 @@ public class Tester {
      */
 
     public boolean isValidStep(RobotConfig r1, RobotConfig r2) {
-        if (r1.getPos().distance(r2.getPos()) > MAX_BASE_STEP) {
-            System.out.println(r1.getPos().distance(r2.getPos()));
+        if (getPoint1(r1).distance(getPoint1(r2)) > MAX_BASE_STEP + MAX_ERROR) {
             return false;
         }
-        if (getPoint2(r1).distance(getPoint2(r2)) > MAX_BASE_STEP) {
+        if (getPoint2(r1).distance(getPoint2(r2)) > MAX_BASE_STEP + MAX_ERROR) {
             return false;
         }
         return true;
@@ -258,7 +258,7 @@ public class Tester {
         double boxdy = newBox.getPos().getY() - oldBox.getPos().getY();
         double boxdx = newBox.getPos().getX() - oldBox.getPos().getX();
 
-        if (robotdy - boxdy > MAX_ERROR || robotdx - boxdx > MAX_ERROR) {
+        if (Math.abs(robotdy - boxdy) > MAX_ERROR || Math.abs(robotdx - boxdx) > MAX_ERROR) {
             return false;
         }
         int actualDirection = 0;
@@ -267,13 +267,13 @@ public class Tester {
         if (boxdy > MAX_ERROR) {
             actualDirection = 1;
             moved++;
-        } else if (boxdy < MAX_ERROR) {
+        } else if (boxdy < -MAX_ERROR) {
             actualDirection = 3;
             moved++;
         } else if (boxdx > MAX_ERROR) {
             actualDirection = 2;
             moved++;
-        } else if (boxdx < MAX_ERROR) {
+        } else if (boxdx < -MAX_ERROR) {
             actualDirection = 4;
             moved++;
         }
@@ -317,13 +317,26 @@ public class Tester {
      * @return the normalised angle.
      */
     public double normaliseAngle(double angle) {
-        while (angle <= 0) {
+        while (angle < 0) {
             angle += 2 * Math.PI;
         }
-        while (angle > 2 * Math.PI) {
+        while (angle >= 2 * Math.PI) {
             angle -= 2 * Math.PI;
         }
-        return angle;
+        return angle + 2 * Math.PI;
+    }
+
+    /**
+     * Checks if a given robot is axis aligned.
+     * @param r the robot
+     * @return true if yes false if no
+     */
+    public boolean isAxisAligned(RobotConfig r) {
+        double angle = normaliseAngle(r.getOrientation() + angleError) % (0.5 * Math.PI);
+        if (angle <= 2 * angleError) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -341,7 +354,7 @@ public class Tester {
 
         double angle = normaliseAngle(r.getOrientation());
         boolean horizontal;
-        if (angle >= Math.PI * 2 - angleError && angle <= Math.PI * 2 + angleError) {
+        if (angle >= Math.PI * 4 - angleError || angle <= Math.PI * 2 + angleError) {
             p1 = getPoint1(r);
             p2 = getPoint2(r);
             horizontal = true;
@@ -362,18 +375,18 @@ public class Tester {
         }
 
         Rectangle2D collisionBox = grow(b.getRect(),MAX_ERROR);
-        if ((!collisionBox.contains(p1)) && (!collisionBox.contains(p2))) {
+        if ((!collisionBox.intersectsLine(new Line2D.Double(p1,p2)))) {
             return -1;
         }
 
         if (horizontal) {
             if (isCoincided(p1.getX(),p2.getX(),b.getRect().getMinX(),b.getRect().getMaxX())) {
-                if (p1.getY() <= b.getPos().getY()) {
+                if (p1.getY() <= b.getPos().getY() + MAX_ERROR) {
                     return 1;
                 } else {return 3;}
             }
         } else if (isCoincided(p1.getY(),p2.getY(),b.getRect().getMinY(),b.getRect().getMaxY())) {
-            if (p1.getX() <= b.getPos().getX()) {
+            if (p1.getX() <= b.getPos().getX() + MAX_ERROR) {
                 return 2;
             } else {return 4;}
         }
@@ -400,8 +413,13 @@ public class Tester {
             List<Box> movingObjects = new ArrayList<Box>();
             movingObjects.addAll(ps.getMovingBoxPath().get(i));
             movingObjects.addAll(ps.getMovingObstaclePath().get(i));
-            if (!hasCollision(ps.getRobotPath().get(i), movingObjects)) {
-                System.out.println("Collision at step + " + i);
+            RobotConfig robot = ps.getRobotPath().get(i);
+            if (!hasCollision(robot, movingObjects)) {
+                System.out.println("Collision at step " + i);
+                pass = false;
+            }
+            if (!testGapSliding(robot, movingObjects)) {
+                System.out.println("Collision at step " + i);
                 pass = false;
             }
         }
@@ -412,17 +430,80 @@ public class Tester {
     }
 
     /**
+     * Checks if the robot is sliding through the tiny gap between two boxes
+     * @param r the robot
+     * @param movingObjects state of all movable objects
+     * @return true if no, false if yes
+     */
+    public boolean testGapSliding(RobotConfig r, List<Box> movingObjects) {
+        double angle = normaliseAngle(r.getOrientation());
+        Point2D p1,p2,r1,r2;
+        p1 = getPoint1(r);
+        p2 = getPoint2(r);
+        boolean horizontal;
+        if (angle >= Math.PI * 4 - angleError || angle <= Math.PI * 2 + angleError) {
+            r1 = new Point2D.Double(p1.getX() + 2 * MAX_ERROR, p1.getY());
+            r2 = new Point2D.Double(p2.getX() - 2 * MAX_ERROR, p2.getY());
+            horizontal = true;
+        } else if (angle >= Math.PI * 2.5 - angleError && angle <= Math.PI * 2.5 + angleError) {
+            r1 = new Point2D.Double(p1.getX(), p1.getY() + 2 * MAX_ERROR);
+            r2 = new Point2D.Double(p2.getX(), p2.getY() - 2 * MAX_ERROR);
+            horizontal = false;
+        } else if (angle >= Math.PI * 3 - angleError && angle <= Math.PI * 3 + angleError) {
+            r1 = new Point2D.Double(p2.getX() + 2 * MAX_ERROR, p2.getY());
+            r2 = new Point2D.Double(p1.getX() - 2 * MAX_ERROR, p1.getY());
+            horizontal = true;
+        } else if (angle >= Math.PI * 3.5 - angleError && angle <= Math.PI * 3.5 + angleError) {
+            r1 = new Point2D.Double(p2.getX(), p2.getY() + 2 * MAX_ERROR);
+            r2 = new Point2D.Double(p1.getX(), p1.getY() - 2 * MAX_ERROR);
+            horizontal = false;
+        } else {
+            return true;
+        }
+        int count = 0;
+        Line2D robotLine = new Line2D.Double(r1, r2);
+        List<Box> collidedBox = new ArrayList<Box>();
+        for (Box b : movingObjects) {
+            Rectangle2D collisionBox = grow(b.getRect(), MAX_ERROR);
+            if (collisionBox.intersectsLine(robotLine)) {
+                count++;
+                collidedBox.add(b);
+            }
+        }
+        if (count > 1) {
+            return isAtSameSide(robotLine, collidedBox, horizontal);
+        }
+        return true;
+    }
+
+    private boolean isAtSameSide(Line2D line, List<Box> boxes, boolean horizontal) {
+        double prevSide = 0;
+        for (Box box: boxes) {
+            double side;
+            if (horizontal) {
+                side = box.getPos().getY() + MAX_ERROR - line.getY1();
+            } else {
+                side = box.getPos().getX() + MAX_ERROR - line.getX1();
+            }
+            if (prevSide * side < 0) {
+                return false;
+            }
+            prevSide = side;
+        }
+        return true;
+    }
+
+    /**
      * Check if a given state contains collision
      * @param r state of robot
-     * @param MovingObjects state of all movable objects
+     * @param movingObjects state of all movable objects
      * @return true if no collision
      */
-    public boolean hasCollision(RobotConfig r, List<Box> MovingObjects) {
-        boolean coupled = false;
+    public boolean hasCollision(RobotConfig r, List<Box> movingObjects) {
         Line2D robotLine = new Line2D.Double(getPoint1(r), getPoint2(r));
         Rectangle2D border = new Rectangle2D.Double(0,0,1,1);
         for (StaticObstacle o: ps.getStaticObstacles()) {
-            if (robotLine.intersects(grow(o.getRect(), MAX_ERROR))) {
+            if (robotLine.intersects(grow(o.getRect(), -MAX_ERROR))) {
                 return false;
             }
         }
@@ -431,30 +512,25 @@ public class Tester {
             return false;
         }
 
-        for (Box b1: MovingObjects) {
+        for (Box b1: movingObjects) {
 
             if (!border.contains(b1.getRect())) {
                 return false;
             }
 
-            Rectangle2D collisionBox = grow(b1.getRect(),MAX_ERROR);
+            Rectangle2D collisionBox = grow(b1.getRect(),-MAX_ERROR);
             if (collisionBox.intersectsLine(robotLine)) {
-                if (coupled) {
                     return false;
-                }
-                if (isCoupled(r,b1) != -1) {
-                    coupled = true;
-                }
             }
 
-            for (Box b2: MovingObjects) {
+            for (Box b2: movingObjects) {
                 if ((!b1.equals(b2)) && (collisionBox.intersects(b2.getRect()))) {
                     return false;
                 }
             }
 
             for (StaticObstacle o: ps.getStaticObstacles()) {
-                if (collisionBox.intersects(o.getRect()) || robotLine.intersects(o.getRect())) {
+                if (collisionBox.intersects(o.getRect())) {
                     return false;
                 }
             }
