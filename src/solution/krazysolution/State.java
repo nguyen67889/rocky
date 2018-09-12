@@ -73,16 +73,32 @@ public class State {
     }
 
     public static String outputString(List<State> states) {
-        StringBuilder sb = new StringBuilder();
+        boolean above = true; //true: angle is in [0..180), false: angle is in [180..360)
+        //I wish I didn't have to do it this way but the support code is so horrible I'm forced to
+                StringBuilder sb = new StringBuilder();
         sb.append(states.size() + "\n");
-        for(State state : states) {
+        for(int i = 0; i < states.size(); i++) {
+            State state = states.get(i);
+            if(i > 0 && Math.abs(states.get(i).robot.getAngle().doubleValue() -
+                    states.get(i - 1).robot.getAngle().doubleValue()) > 1) { //0 <-> 180 snap
+                above = !above;
+            }
+
             Robot robot = state.robot;
             sb.append((double)robot.getX()/AREA_SIZE + " ");
             sb.append((double)robot.getY()/AREA_SIZE + " ");
-            sb.append(Util.round(Math.toRadians(robot.getAngle().doubleValue()), 4) + " ");
-            for(Rectangle2D rect : state.getAllRects()) {
-                sb.append((rect.getX() + rect.getWidth()/2)/AREA_SIZE + " ");
-                sb.append((rect.getY() + rect.getHeight()/2)/AREA_SIZE + " ");
+            if(above) {
+                sb.append(Util.round(Math.toRadians(robot.getAngle().doubleValue()), 4) + " ");
+            } else {
+                sb.append(Util.round(Math.toRadians(robot.getAngle().doubleValue() + 180), 4) + " ");
+            }
+            for(Box.MBox mBox : state.mBoxes) {
+                sb.append((mBox.getX() + (double)mBox.getWidth()/2)/AREA_SIZE + " ");
+                sb.append((mBox.getY() + (double)mBox.getHeight()/2)/AREA_SIZE + " ");
+            }
+            for(Box.MObs mObs : state.mObstacles) {
+                sb.append((mObs.getX() + (double)mObs.getWidth()/2)/AREA_SIZE + " ");
+                sb.append((mObs.getY() + (double)mObs.getHeight()/2)/AREA_SIZE + " ");
             }
             sb.append("\n");
         }
@@ -144,12 +160,12 @@ public class State {
         if(current.robot.getAngle().intValue() == 135 && end.robot.getAngle().intValue() == 0) {
             end.robot.setAngle(BigDecimal.valueOf(180));
         }
-        while(current.robot.getAngle().doubleValue() < end.robot.getAngle().doubleValue()) {
+        while(current.robot.getAngle().intValue() < end.robot.getAngle().intValue()) {
             current = current.saveState();
             current.robot.setAngle(current.robot.getAngle().add(BigDecimal.valueOf(0.1)));
             states.add(current);
         }
-        while(current.robot.getAngle().doubleValue() > end.robot.getAngle().doubleValue()) {
+        while(current.robot.getAngle().intValue() > end.robot.getAngle().intValue()) {
             current = current.saveState();
             current.robot.setAngle(current.robot.getAngle().subtract(BigDecimal.valueOf(0.1)));
             states.add(current);
@@ -170,7 +186,6 @@ public class State {
             while (current.mBoxes.get(i).getX() < end.mBoxes.get(i).getX()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setX(current.mBoxes.get(i).getX() + 10);
-                //current.robot.setX(current.robot.getX() + 10);
                 current.dir = Util.Side.LEFT;
                 current.current = i + 1;
 
@@ -179,7 +194,6 @@ public class State {
             while (current.mBoxes.get(i).getX() > end.mBoxes.get(i).getX()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setX(current.mBoxes.get(i).getX() - 10);
-                //current.robot.setX(current.robot.getX() - 10);
                 current.dir = Util.Side.RIGHT;
                 current.current = i + 1;
 
@@ -188,7 +202,6 @@ public class State {
             while (current.mBoxes.get(i).getY() < end.mBoxes.get(i).getY()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setY(current.mBoxes.get(i).getY() + 10);
-                //current.robot.setY(current.robot.getY() + 10);
                 current.dir = Util.Side.BOTTOM;
                 current.current = i + 1;
 
@@ -197,7 +210,6 @@ public class State {
             while (current.mBoxes.get(i).getY() > end.mBoxes.get(i).getY()) {
                 current = current.saveState();
                 current.mBoxes.get(i).setY(current.mBoxes.get(i).getY() - 10);
-                //current.robot.setY(current.robot.getY() - 10);
                 current.dir = Util.Side.TOP;
                 current.current = i + 1;
 
@@ -209,36 +221,32 @@ public class State {
             while (current.mObstacles.get(i).getX() < end.mObstacles.get(i).getX()) {
                 current = current.saveState();
                 current.mObstacles.get(i).setX(current.mObstacles.get(i).getX() + 10);
-                current.robot.setX(current.robot.getX() + 10);
                 current.dir = Util.Side.LEFT;
-                current.current = i + 1;
+                current.current = -i - 1;
 
                 states.add(current);
             }
             while (current.mObstacles.get(i).getX() > end.mObstacles.get(i).getX()) {
                 current = current.saveState();
                 current.mObstacles.get(i).setX(current.mObstacles.get(i).getX() - 10);
-                current.robot.setX(current.robot.getX() - 10);
                 current.dir = Util.Side.RIGHT;
-                current.current = i + 1;
+                current.current = -i - 1;
 
                 states.add(current);
             }
             while (current.mObstacles.get(i).getY() < end.mObstacles.get(i).getY()) {
                 current = current.saveState();
                 current.mObstacles.get(i).setY(current.mObstacles.get(i).getY() + 10);
-                current.robot.setY(current.robot.getY() + 10);
                 current.dir = Util.Side.BOTTOM;
-                current.current = i + 1;
+                current.current = -i - 1;
 
                 states.add(current);
             }
             while (current.mObstacles.get(i).getY() > end.mObstacles.get(i).getY()) {
                 current = current.saveState();
                 current.mObstacles.get(i).setY(current.mObstacles.get(i).getY() - 10);
-                current.robot.setY(current.robot.getY() - 10);
                 current.dir = Util.Side.TOP;
-                current.current = i + 1;
+                current.current = -i - 1;
 
                 states.add(current);
             }
