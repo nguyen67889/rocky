@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import problem.ProblemSpec;
 
+import problem.ProblemSpec;
 import solution.boxes.Movable;
 import solution.boxes.MovingBox;
 import solution.boxes.MovingObstacle;
@@ -74,7 +74,6 @@ public class Solution {
         }
 
         List<State> path = new ArrayList<>();
-        System.out.println(path);
         for (int i = 0; i < nodes.size() - 1; i++) {
             path.addAll(State.interimBoxStates(nodes.get(i).state, nodes.get(i + 1).state));
         }

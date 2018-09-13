@@ -1,14 +1,14 @@
 package solution.krazysolution;
 
-import problem.ProblemSpec;
-import problem.RobotConfig;
-import solution.Util;
-
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
 import java.util.*;
+
+import problem.ProblemSpec;
+import problem.RobotConfig;
+import solution.Util;
 import solution.boxes.Box;
 import solution.boxes.MovingBox;
 import solution.boxes.MovingObstacle;
@@ -61,39 +61,6 @@ public class State {
         this.mObstacles = mObstacles;
         this.sObstacles = sObstacles;
         this.robot = robot;
-    }
-
-    public static String outputString(List<State> states) {
-        boolean above = true; //true: angle is in [0..180), false: angle is in [180..360)
-        //I wish I didn't have to do it this way but the support code is so horrible I'm forced to
-                StringBuilder sb = new StringBuilder();
-        sb.append(states.size() + "\n");
-        for(int i = 0; i < states.size(); i++) {
-            State state = states.get(i);
-            if(i > 0 && Math.abs(states.get(i).robot.getAngle().doubleValue() -
-                    states.get(i - 1).robot.getAngle().doubleValue()) > 1) { //0 <-> 180 snap
-                above = !above;
-            }
-
-            Robot robot = state.robot;
-            sb.append((double)robot.getX()/AREA_SIZE + " ");
-            sb.append((double)robot.getY()/AREA_SIZE + " ");
-            if(above) {
-                sb.append(Util.round(Math.toRadians(robot.getAngle().doubleValue()), 4) + " ");
-            } else {
-                sb.append(Util.round(Math.toRadians(robot.getAngle().doubleValue() + 180), 4) + " ");
-            }
-            for(MovingBox mBox : state.mBoxes) {
-                sb.append((mBox.getX() + (double)mBox.getWidth()/2)/AREA_SIZE + " ");
-                sb.append((mBox.getY() + (double)mBox.getHeight()/2)/AREA_SIZE + " ");
-            }
-            for(MovingObstacle mObs : state.mObstacles) {
-                sb.append((mObs.getX() + (double)mObs.getWidth()/2)/AREA_SIZE + " ");
-                sb.append((mObs.getY() + (double)mObs.getHeight()/2)/AREA_SIZE + " ");
-            }
-            sb.append("\n");
-        }
-        return sb.toString();
     }
 
     /** If you're looking at this method and thinking "wtf is this"
