@@ -1,29 +1,31 @@
 package solution;
 
-import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import problem.Box;
-import problem.ProblemSpec;
-import problem.RobotConfig;
+
+import solution.boxes.Movable;
+import solution.states.State;
 
 public class Formatter {
 
     /**
      * Format the output of a robots current configuration.
      *
-     * @param robotConfig The robots configuration.
+     * @param robot The robots configuration.
      * @return The formatted robot config.
      */
-    public static StringBuilder formatRobot(RobotConfig robotConfig) {
+    public static StringBuilder formatRobot(Robot robot, boolean above) {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(robotConfig.getPos().getX()).append(" ");
-        builder.append(robotConfig.getPos().getY()).append(" ");
-        builder.append(robotConfig.getOrientation());
+        int area = State.AREA_SIZE;
+
+        builder.append((double)robot.getX()/area).append(" ");
+        builder.append((double)robot.getY()/area).append(" ");
+
+        double rotation = robot.getAngle().doubleValue();
+        rotation = above ? rotation : rotation + 180;
+
+        builder.append(Util.toRadians(rotation)).append(" ");
 
         return builder;
     }
@@ -31,15 +33,19 @@ public class Formatter {
     /**
      * Format the output of box positions.
      *
-     * @param boxPositions A list of positions for boxes.
+     * @param movables A list of positions for boxes.
      * @return The formatted box positions.
      */
-    public static StringBuilder formatBoxPositions(List<Point2D> boxPositions) {
+    public static StringBuilder formatBoxes(List<Movable> movables) {
         StringBuilder builder = new StringBuilder();
 
-        for (Point2D position : boxPositions) {
-            builder.append(" ").append(Util.round(position.getX(), 4));
-            builder.append(" ").append(Util.round(position.getY(), 4));
+        int area = State.AREA_SIZE;
+
+        for(Movable movable : movables) {
+            builder.append((movable.getX() + (double)movable.getWidth()/2)/area);
+            builder.append(" ");
+            builder.append((movable.getY() + (double)movable.getHeight()/2)/area);
+            builder.append(" ");
         }
 
         return builder;
@@ -48,84 +54,33 @@ public class Formatter {
     /**
      * Format output to a file for a solution to a problem.
      *
-     * @param solution A solution instance that has been solved.
+     * @param states The series of states that makes up a solution.
      * @return The formatted output.
      */
-    public static String format(Solution solution) {
-        List<List<Point2D>> boxes = solution.getBoxPositions();
-        List<RobotConfig> robots = solution.getRobotPositions();
+    public static String format(List<State> states) {
+        boolean above = true;
 
-        if (boxes.size() != robots.size()) {
-            throw new RuntimeException("Robot positions and box positions differ");
-        }
-
+        //I wish I didn't have to do it this way but the support code is so horrible I'm forced to
         StringBuilder builder = new StringBuilder();
-        builder.append(robots.size()).append("\n");
+        builder.append(states.size()).append("\n");
 
-        for (int i = 0; i < robots.size(); i++) {
-            builder.append(Formatter.formatRobot(robots.get(i)));
-            builder.append(Formatter.formatBoxPositions(boxes.get(i)));
-            builder.append("\n");
-        }
-
-        return builder.toString();
-    }
-
-    /**
-     * Format output to a file for a problem spec and a mapping of box movements.
-     *
-     * @param problem The input problem specification.
-     * @param movements A map of boxes to the list of positions they should move to.
-     * @return The formatted output.
-     */
-    public static String format(ProblemSpec problem,
-            Map<Box, List<Point2D>> movements) {
-        StringBuilder builder = new StringBuilder();
-
-        int moves = 0;
-        for (List<Point2D> positions : movements.values()) {
-            moves += positions.size();
-        }
-
-        // Include a header of how many moves will be made
-        builder.append(moves).append("\n");
-
-        for (Entry<Box, List<Point2D>> entry : movements.entrySet()) {
-            // For each move made by a box
-            for (Point2D point : entry.getValue()) {
-                // Output the robots location
-                // TODO: Fix
-                builder.append(
-                        Formatter.formatRobot(problem.getInitialRobotConfig()));
-
-                // List of all box positions at this state
-                List<Point2D> boxes = new ArrayList<>();
-
-                // List of all moveable objects in the map
-                List<Box> movables = new ArrayList<>(problem.getMovingBoxes());
-                movables.addAll(problem.getMovingObstacles());
-
-                for (Box box : movables) {
-                    Point2D.Double position;
-                    double halfWidth = box.getWidth() / 2;
-
-                    // Update box position if current box is moving box
-                    if (box.equals(entry.getKey())) {
-                        Point2D.Double newPos = new Double(
-                                point.getX() - halfWidth,
-                                point.getY() - halfWidth);
-                        box.getPos().setLocation(newPos);
-                    }
-
-                    // Store the position for this box at this step
-                    position = new Double(box.getPos().getX() + halfWidth,
-                            box.getPos().getY() + halfWidth);
-                    boxes.add(position);
-                }
-
-                builder.append(Formatter.formatBoxPositions(boxes));
-                builder.append("\n");
+        for (int i = 0; i < states.size(); i++) {
+            State state = states.get(i);
+            if(i > 0 && Math.abs(state.robot.getAngle().doubleValue() -
+                    states.get(i - 1).robot.getAngle().doubleValue()) > 1) {
+                above = !above;
             }
+
+            // Format the robots position
+            Robot robot = state.robot;
+            builder.append(formatRobot(robot, above));
+
+            // Format the box positions
+            List<Movable> movables = new ArrayList<>(state.mBoxes);
+            movables.addAll(state.mObstacles);
+            builder.append(formatBoxes(movables));
+
+            builder.append("\n");
         }
 
         return builder.toString();

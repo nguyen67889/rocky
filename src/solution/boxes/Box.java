@@ -93,26 +93,6 @@ public abstract class Box {
                 width + 2 * expanded, height + 2 * expanded);
     }
 
-    /**
-     * Gets the bottom
-     * @return
-     */
-    public Rectangle2D getBottomEdge() {
-        return new Rectangle2D.Double(x, y, width, height / 2);
-    }
-
-    public Rectangle2D getTopEdge() {
-        return new Rectangle2D.Double(x, y + height / 2, width, height / 2);
-    }
-
-    public Rectangle2D getLeftEdge() {
-        return new Rectangle2D.Double(x, y, width / 2, height);
-    }
-
-    public Rectangle2D getRightEdge() {
-        return new Rectangle2D.Double(x + width / 2, y, width / 2, height);
-    }
-
     public abstract Box copy();
 
     public boolean equals(Object obj) {

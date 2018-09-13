@@ -1,122 +1,241 @@
 package solution;
 
-import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.concurrent.ThreadLocalRandom;
 
-import problem.Box;
-import problem.MovingBox;
 import problem.ProblemSpec;
-import problem.RobotConfig;
-
+import solution.boxes.Movable;
+import solution.boxes.MovingBox;
+import solution.boxes.MovingObstacle;
+import solution.states.Node;
+import solution.states.State;
+import solution.states.StateGraph;
 import tester.Tester;
 
 public class Solution {
 
-    private List<List<Point2D>> boxPositions = new ArrayList<>();
-    private List<RobotConfig> robotPositions = new ArrayList<>();
+    // The problem specification to solve
+    private ProblemSpec spec;
 
     /**
-     * Return a list of states containing a list of every boxes position.
+     * Construct a new solution with based on a problem spec.
      *
-     * @return A list of lists of box positions.
+     * @param spec The problem to solve.
      */
-    public List<List<Point2D>> getBoxPositions() {
-        return new ArrayList<>(boxPositions);
+    public Solution(ProblemSpec spec) {
+        this.spec = spec;
     }
 
-    /**
-     * Return a list of states containing a robot configuration.
-     *
-     * @return A list of robot configurations.
-     */
-    public List<RobotConfig> getRobotPositions() {
-        return new ArrayList<>(robotPositions);
+    private List<State> getBoxStates(State startState, int index) {
+        State goalState = startState.saveState();
+        MovingBox box = goalState.mBoxes.get(index);
+        box.setX(box.getXGoal());
+        box.setY(box.getYGoal());
+        List<Node<State>> nodes = new StateGraph(new Node<>(startState),
+                new Node<>(goalState), StateGraph.GraphType.BOXES, index).aStar();
+
+        if(nodes == null) {
+            return null;
+        }
+
+        List<State> path = new ArrayList<>();
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            path.addAll(State.interimBoxStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
+        }
+        path.addAll(State.interimBoxStates(path.get(path.size() - 1), goalState));
+
+        return path;
     }
 
-    /**
-     * Solve a problem based on the problem specification and update solution.
-     *
-     * @param problem The problem specification.
-     */
-    public void solve(ProblemSpec problem) {
-        Map<Box, List<Point2D>> movements = Solution.calculateMovements(problem);
+    private List<State> getMovingBoxStates(State startState) {
+        State goalState = startState.saveState();
+        List<Node<State>> nodes = null;
+        while(nodes == null) {
+            int index = ThreadLocalRandom.current().nextInt(goalState.mObstacles.size());
+            MovingObstacle start = startState.mObstacles.get(index);
+            MovingObstacle obs = goalState.mObstacles.get(index);
+            obs.setX(-1);
+            obs.setY(-1);
+            while(goalState.isBoxCollision(obs) || startState.isCloseObs(goalState)) {
+                int deltaX = ThreadLocalRandom.current().nextInt(-50, 51)*10;
+                int deltaY = ThreadLocalRandom.current().nextInt(-50, 51)*10;
+                obs.setX(start.getX() + deltaX);
+                obs.setY(start.getY() + deltaY);
+            }
 
-        Grid<BigDecimal> grid = new Grid<>(problem);
-        RobotConfig robotConfig = problem.getInitialRobotConfig();
-        List<Box> movable = new ArrayList<>(problem.getMovingBoxes());
-        movable.addAll(problem.getMovingObstacles());
+            nodes = new StateGraph(new Node<>(startState), new Node<>(goalState),
+                    StateGraph.GraphType.OBSTACLES, index).aStar();
+        }
 
-        for (Entry<Box, List<Point2D>> entry : movements.entrySet()) {
-            Box currentBox = entry.getKey();
+        List<State> path = new ArrayList<>();
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            path.addAll(State.interimBoxStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
+        }
+        path.addAll(State.interimBoxStates(path.get(path.size() - 1), goalState));
 
-            Point2D goal = new Point2D.Double(
-                    currentBox.getPos().getX(),
-                    currentBox.getPos().getY() + currentBox.getWidth());
+        return path;
+    }
 
-//            AStar<BigDecimal> aStar = new AStar<>(grid.getGrid(),
-//                    robotConfig.getPos(), goal,
-//                    BigDecimal.valueOf(problem.getRobotWidth()));
-//            List<Node<BigDecimal>> path = aStar.run();
-//            Box robotBox = new MovingBox(robotConfig.getPos(),
-//                    problem.getRobotWidth());
-//            List<Point2D> positions = grid.getCoordPath(path, goal, robotBox);
-//
-//            for (Point2D position : positions) {
-//                robotConfig = new RobotConfig(
-//                        new Double(position.getX(), position.getY()),
-//                        robotConfig.getOrientation());
-//
-//                robotPositions.add(robotConfig);
-//                boxPositions.add(generateBoxPositions(movable));
-//            }
+    private List<State> getAllBoxStates(State startState) {
+        State goalState = startState.saveState();
+        State prevState = startState.saveState();
+        List<State> states = new ArrayList<>();
 
-            for (Point2D point : entry.getValue()) {
-                robotPositions.add(robotConfig);
+        LinkedList<Integer> boxIndexes = new LinkedList<>();
+        for(int i = 0; i < startState.mBoxes.size(); i++) {
+            boxIndexes.add(i);
 
-                List<Point2D> boxes = new ArrayList<>();
-                Point2D position;
+            goalState.mBoxes.get(i).setX(goalState.mBoxes.get(i).getXGoal());
+            goalState.mBoxes.get(i).setY(goalState.mBoxes.get(i).getYGoal());
+        }
 
-                for (Box box : movable) {
-                    double halfWidth = box.getWidth() / 2;
+        int loop = 0;
+        while(!boxIndexes.isEmpty()) {
+            if(loop >= boxIndexes.size()) {
+                states.addAll(getMovingBoxStates(prevState));
+                prevState = states.get(states.size() - 1);
+            }
 
-                    // Update box position if current box is moving box
-                    if (box.equals(currentBox)) {
-                        Point2D.Double newPos = new Double(
-                                point.getX() - halfWidth,
-                                point.getY() - halfWidth);
-                        box.getPos().setLocation(newPos);
-                    }
+            int i = boxIndexes.removeFirst();
+            List<State> boxStates = getBoxStates(prevState, i);
 
-                    // Store the position for this box at this step
-                    position = new Double(box.getPos().getX() + halfWidth,
-                            box.getPos().getY() + halfWidth);
-                    boxes.add(position);
-                }
-
-                boxPositions.add(boxes);
+            if(boxStates != null) {
+                loop = 0;
+                states.addAll(boxStates);
+                prevState = states.get(states.size() - 1);
+            } else {
+                loop += 1;
+                boxIndexes.addLast(i);
             }
         }
+
+        return states;
     }
 
-    private List<Point2D> generateBoxPositions(List<Box> boxes) {
-        List<Point2D> result = new ArrayList<>();
-        Point2D position;
-        for (Box box : boxes) {
-            double halfWidth = box.getWidth() / 2;
-            position = new Double(box.getPos().getX() + halfWidth,
-                    box.getPos().getY() + halfWidth);
-            result.add(position);
+    private List<State> robotStateToState(State startState, int index, Util.Side alignment) {
+        int x = 0, y = 0;
+        BigDecimal a = null;
+        Movable box;
+        if(index > 0){
+            box = startState.mBoxes.get(index - 1);
+        } else if(index < 0) {
+            box = startState.mObstacles.get(-index - 1);
+        } else {
+            throw new RuntimeException("Invalid box index");
         }
-        return result;
+
+        switch (alignment) {
+            case BOTTOM:
+                x = box.getX() + box.getWidth() / 2;
+                y = box.getY();
+                a = BigDecimal.ZERO;
+                break;
+            case TOP:
+                x = box.getX() + box.getWidth() / 2;
+                y = box.getY() + box.getHeight();
+                a = BigDecimal.ZERO;
+                break;
+            case LEFT:
+                x = box.getX();
+                y = box.getY() + box.getHeight() / 2;
+                a = BigDecimal.valueOf(90);
+                break;
+            case RIGHT:
+                x = box.getX() + box.getWidth();
+                y = box.getY() + box.getHeight() / 2;
+                a = BigDecimal.valueOf(90);
+                break;
+        }
+
+        State goalState = startState.saveState();
+        goalState.robot.setX(x);
+        goalState.robot.setY(y);
+        goalState.robot.setAngle(a);
+
+        List<Node<State>> nodes = new StateGraph(new Node<State>(startState),
+                new Node<State>(goalState), StateGraph.GraphType.ROBOT, -1).aStar();
+        List<State> path = new ArrayList<>();
+
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            path.addAll(State.interimStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
+        }
+
+        path.addAll(State.interimStates(path.get(path.size() - 1), goalState));
+
+        return path;
+    }
+
+    private List<State> generateStates(State startState) {
+        List<State> path = new ArrayList<>();
+        List<State> boxStates = getAllBoxStates(startState);
+
+        Util.Side side = null;
+        int index = 0;
+
+        path.add(boxStates.get(0));
+        for (int i = 1; i < boxStates.size(); i++) {
+            State currentState = boxStates.get(i);
+            State prevState = boxStates.get(i - 1);
+
+            if (currentState.dir != side || currentState.current != index) {
+                side = currentState.dir;
+                index = currentState.current;
+                path.addAll(robotStateToState(prevState, index, side));
+            }
+
+            prevState = path.get(path.size() - 1);
+
+            Movable box;
+            if(currentState.current > 0) {
+                box = currentState.mBoxes.get(currentState.current - 1);
+            } else if(currentState.current < 0 ) {
+                box = currentState.mObstacles.get(-currentState.current - 1);
+            } else {
+                throw new RuntimeException("Invalid box index");
+            }
+
+            switch (currentState.dir) {
+                case RIGHT:
+                    currentState.robot.setX(box.getX() + box.getWidth());
+                    currentState.robot.setY(prevState.robot.getY());
+                    currentState.robot.setAngle(prevState.robot.getAngle());
+                    break;
+                case LEFT:
+                    currentState.robot.setX(box.getX());
+                    currentState.robot.setY(prevState.robot.getY());
+                    currentState.robot.setAngle(prevState.robot.getAngle());
+                    break;
+                case TOP:
+                    currentState.robot.setY(box.getY() + box.getHeight());
+                    currentState.robot.setX(prevState.robot.getX());
+                    currentState.robot.setAngle(prevState.robot.getAngle());
+                    break;
+                case BOTTOM:
+                    currentState.robot.setY(box.getY());
+                    currentState.robot.setX(prevState.robot.getX());
+                    currentState.robot.setAngle(prevState.robot.getAngle());
+                    break;
+            }
+            path.add(currentState);
+        }
+
+        return path;
+    }
+
+    /**
+     * Return the solution to the problem in terms of a list of atomic states.
+     *
+     * @return The list of states to solve a problem.
+     */
+    public List<State> solve() {
+        return generateStates(new State(spec));
     }
 
     /**
@@ -133,6 +252,7 @@ public class Solution {
             input.flush();
         } catch (IOException e) {
             System.err.println("FileIO Error: could not output solution file");
+            System.exit(4);
         }
     }
 
@@ -148,6 +268,7 @@ public class Solution {
             problem.loadProblem(problemFile);
         } catch (IOException e) {
             System.err.println("FileIO Error: could not load input file");
+            System.exit(2);
         }
         return problem;
     }
@@ -165,41 +286,9 @@ public class Solution {
             problem.loadSolution(solutionFile);
         } catch (IOException e) {
             System.err.println("FileIO Error: could not read solution file");
+            System.exit(3);
         }
         return problem;
-    }
-
-    /**
-     * Calcuate the movements required by all the boxes in a problem to reach
-     * the solution using an A* algorithm.
-     *
-     * @param problem The problem specification.
-     * @return A map of boxes to the list of positions they should move to.
-     */
-    private static Map<Box, List<Point2D>> calculateMovements(
-            ProblemSpec problem) {
-        Grid<BigDecimal> grid = new Grid<>(problem);
-        Node<BigDecimal>[][] map = grid.getGrid();
-
-        Map<Box, List<Point2D>> movements = new HashMap<>();
-
-        for (int i = 0; i < problem.getMovingBoxEndPositions().size(); i++) {
-            Box box = problem.getMovingBoxes().get(i);
-            Point2D goal = problem.getMovingBoxEndPositions().get(i);
-
-            AStar<BigDecimal> aStar = new AStar<>(map, box.getPos(),
-                    goal, BigDecimal.valueOf(box.getWidth()));
-            List<Node<BigDecimal>> path = aStar.run();
-
-            List<Point2D> coords = grid.getCoordPath(path, goal, box);
-
-            Point2D lastPosition = coords.get(coords.size() - 1);
-            grid.moveBox(box, lastPosition);
-
-            movements.put(box, coords);
-        }
-
-        return movements;
     }
 
     /**
@@ -211,14 +300,12 @@ public class Solution {
         Tester tester = new Tester(problemSpec);
 
         if (problemSpec.getProblemLoaded() && problemSpec.getSolutionLoaded()) {
-            System.out
-                    .println("Has initial state: " + tester.testInitialFirst());
+            System.out.println("Has initial state: " + tester.testInitialFirst());
             System.out.println("Correct step sizes: " + tester.testStepSize());
             System.out.println("Has no collisions: " + tester.testCollision());
             System.out.println("All pushes valid: " + tester.testPushedBox());
         } else if (problemSpec.getProblemLoaded()) {
-            System.out.println(
-                    "Problem has been loaded but no solution generated");
+            System.out.println("Problem has been loaded but no solution generated");
         } else {
             System.out.println("Problem has not been loaded correctly");
         }
@@ -233,8 +320,7 @@ public class Solution {
      */
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.err.println(
-                    "Invalid Usage: java ProgramName inputFileName outputFileName");
+            System.err.println("Invalid Usage: java ProgramName inputFileName outputFileName");
             System.exit(1);
         }
 
@@ -242,12 +328,10 @@ public class Solution {
         String outputFile = args[1];
 
         ProblemSpec problemSpec = loadProblem(inputFile);
-        Solution solution = new Solution();
-        solution.solve(problemSpec);
-        System.out.println(solution.getBoxPositions());
+        Solution solution = new Solution(problemSpec);
+        List<State> states = solution.solve();
 
-        String output = Formatter.format(solution);
-        writeSolution(output, outputFile);
+        writeSolution(Formatter.format(states), outputFile);
 
         problemSpec = loadProblem(inputFile, outputFile);
         test(problemSpec);
