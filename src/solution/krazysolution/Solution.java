@@ -1,6 +1,7 @@
 package solution.krazysolution;
 
 import problem.ProblemSpec;
+import solution.Formatter;
 import solution.Util;
 import solution.boxes.Movable;
 import solution.boxes.MovingBox;
@@ -31,7 +32,7 @@ public class Solution {
     public void run() {
         List<State> states = generateStates(new State(spec));
         try {
-            write(State.outputString(states), "problems/outputK.txt");
+            write(Formatter.format(states), "problems/outputK.txt");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -125,12 +126,6 @@ public class Solution {
                 loop += 1;
                 boxIndexes.addLast(i);
             }
-        }
-
-        try {
-            write(State.outputString(states), "problems/outputK.txt");
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         return states;

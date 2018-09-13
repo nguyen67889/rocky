@@ -26,4 +26,8 @@ public class Util {
         BigDecimal number = new BigDecimal(value);
         return number.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
     }
+
+    public static BigDecimal toRadians(double angle) {
+        return Util.round(Math.toRadians(angle), 4);
+    }
 }
