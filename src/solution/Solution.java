@@ -14,8 +14,8 @@ import problem.ProblemSpec;
 import solution.boxes.Movable;
 import solution.boxes.MovingBox;
 import solution.boxes.MovingObstacle;
-import solution.krazysolution.State;
-import solution.krazysolution.StateGraph;
+import solution.states.State;
+import solution.states.StateGraph;
 import tester.Tester;
 
 public class Solution {

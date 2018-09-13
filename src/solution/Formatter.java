@@ -5,7 +5,7 @@ import java.util.List;
 
 import solution.boxes.Movable;
 import solution.krazysolution.Robot;
-import solution.krazysolution.State;
+import solution.states.State;
 
 public class Formatter {
 

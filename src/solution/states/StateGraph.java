@@ -1,4 +1,4 @@
-package solution.krazysolution;
+package solution.states;
 
 import solution.Util;
 

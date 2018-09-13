@@ -2,7 +2,7 @@ package solution.boxes;
 
 import java.awt.geom.Rectangle2D;
 import solution.Util;
-import solution.krazysolution.State;
+import solution.states.State;
 
 public class StaticObstacle extends Box {
 

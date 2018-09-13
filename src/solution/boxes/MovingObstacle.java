@@ -1,7 +1,7 @@
 package solution.boxes;
 
 import solution.Util;
-import solution.krazysolution.State;
+import solution.states.State;
 
 public class MovingObstacle extends Movable {
 
