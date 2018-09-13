@@ -8,7 +8,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Solution {
     ProblemSpec spec;
@@ -40,6 +43,9 @@ public class Solution {
         box.setY(box.getYGoal());
         List<StateGraph.StateNode> nodes = new StateGraph(new StateGraph.StateNode(startState),
                 new StateGraph.StateNode(goalState), StateGraph.GraphType.BOXES, index).aStar();
+        if(nodes == null) {
+            return null;
+        }
 
         List<State> path = new ArrayList<>();
         for (int i = 0; i < nodes.size() - 1; i++) {
@@ -50,18 +56,79 @@ public class Solution {
         return path;
     }
 
+    private List<State> getMovingBoxStates(State startState) {
+        System.out.println("Time to move some boxes!");
+
+        State goalState = startState.saveState();
+        List<StateGraph.StateNode> nodes = null;
+        while(nodes == null) {
+            int index = ThreadLocalRandom.current().nextInt(goalState.mObstacles.size());
+            Box.MObs start = startState.mObstacles.get(index);
+            Box.MObs obs = goalState.mObstacles.get(index);
+            obs.setX(-1);
+            obs.setY(-1);
+            while(goalState.isBoxCollision(obs) || startState.isCloseObs(goalState)) {
+                System.out.println("iter");
+                int deltaX = ThreadLocalRandom.current().nextInt(-50, 51)*10;
+                int deltaY = ThreadLocalRandom.current().nextInt(-50, 51)*10;
+                obs.setX(start.getX() + deltaX);
+                obs.setY(start.getY() + deltaY);
+            }
+            System.out.println(obs.getX() + ", " + obs.getY());
+            nodes = new StateGraph(new StateGraph.StateNode(startState), new StateGraph.StateNode(goalState),
+                    StateGraph.GraphType.OBSTACLES, index).aStar();
+            System.out.println("help");
+        }
+        System.out.println("path!");
+
+        List<State> path = new ArrayList<>();
+        System.out.println(path);
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            path.addAll(State.interimBoxStates(nodes.get(i).state, nodes.get(i + 1).state));
+        }
+        path.addAll(State.interimBoxStates(path.get(path.size() - 1), goalState));
+
+        return path;
+    }
+
     private List<State> getAllBoxStates(State startState) {
-        //TODO: handle collisions :'(
+        //TODO: handle moving obstacles
         State goalState = startState.saveState();
         State prevState = startState.saveState();
         List<State> states = new ArrayList<>();
 
-        for (int i = 0; i < startState.mBoxes.size(); i++) {
+        LinkedList<Integer> boxIndexes = new LinkedList<>();
+        for(int i = 0; i < startState.mBoxes.size(); i++) {
+            boxIndexes.add(i);
+
             goalState.mBoxes.get(i).setX(goalState.mBoxes.get(i).getXGoal());
             goalState.mBoxes.get(i).setY(goalState.mBoxes.get(i).getYGoal());
+        }
 
-            states.addAll(getBoxStates(prevState, i));
-            prevState = states.get(states.size() - 1);
+        int loop = 0;
+        while(!boxIndexes.isEmpty()) {
+            if(loop >= boxIndexes.size()) {
+                states.addAll(getMovingBoxStates(prevState));
+                prevState = states.get(states.size() - 1);
+            }
+
+            int i = boxIndexes.removeFirst();
+            List<State> boxStates = getBoxStates(prevState, i);
+
+            if(boxStates != null) {
+                loop = 0;
+                states.addAll(boxStates);
+                prevState = states.get(states.size() - 1);
+            } else {
+                loop += 1;
+                boxIndexes.addLast(i);
+            }
+        }
+
+        try {
+            write(State.outputString(states), "problems/outputK.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return states;
@@ -70,7 +137,14 @@ public class Solution {
     private List<State> robotStateToState(State startState, int index, Util.Side alignment) {
         int x = 0, y = 0;
         BigDecimal a = null;
-        Box.MBox box = startState.mBoxes.get(index - 1); //TODO handle obstacles
+        Box.MBox box;
+        if(index > 0){
+            box = startState.mBoxes.get(index - 1);
+        } else if(index < 0) {
+            box = startState.mObstacles.get(-index - 1);
+        } else {
+            throw new RuntimeException("Invalid box index");
+        }
 
         switch (alignment) {
             case BOTTOM:
@@ -126,7 +200,6 @@ public class Solution {
             State prevState = boxStates.get(i - 1);
 
             if (currentState.dir != side || currentState.current != index) {
-                System.out.println(prevState + " to " + currentState);
                 side = currentState.dir;
                 index = currentState.current;
                 path.addAll(robotStateToState(prevState, index, side));
@@ -134,8 +207,15 @@ public class Solution {
 
             prevState = path.get(path.size() - 1);
 
-            Box.MBox box = currentState.mBoxes.get(currentState.current - 1);
-            //TODO: handle moving boxes (negative index)
+            Box.MBox box;
+            if(currentState.current > 0) {
+                box = currentState.mBoxes.get(currentState.current - 1);
+            } else if(currentState.current < 0 ) {
+                box = currentState.mBoxes.get(-currentState.current - 1);
+            } else {
+                throw new RuntimeException("Invalid box index");
+            }
+
             switch (currentState.dir) {
                 case RIGHT:
                     currentState.robot.setX(box.getX() + box.getWidth());

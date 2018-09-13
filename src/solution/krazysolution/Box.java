@@ -33,7 +33,7 @@ public abstract class Box {
 
     public Rectangle2D getExpandedRect() {
         //int expanded = (int)Math.ceil(width/Math.sqrt(2));
-        int expanded = 400;
+        int expanded = 300;
         return new Rectangle2D.Double(x - expanded, y - expanded, width + 2*expanded, height + 2*expanded);
     }
 
@@ -76,8 +76,8 @@ public abstract class Box {
     }
 
     public static class MBox extends Box {
-        int xGoal;
-        int yGoal;
+        private int xGoal;
+        private int yGoal;
 
         public void setX(int x) {
             this.x = x;

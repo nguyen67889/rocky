@@ -14,7 +14,7 @@ import java.util.*;
 
 public class State {
     private final static int AREA_SIZE = 10000; //area of the arena
-    private final static int CLOSE = 200;
+    private final static int CLOSE = 100;
 
     public List<Box.MBox> mBoxes;
     public List<Box.MObs> mObstacles;
@@ -160,12 +160,12 @@ public class State {
         if(current.robot.getAngle().intValue() == 135 && end.robot.getAngle().intValue() == 0) {
             end.robot.setAngle(BigDecimal.valueOf(180));
         }
-        while(current.robot.getAngle().intValue() < end.robot.getAngle().intValue()) {
+        while(current.robot.getAngle().doubleValue() < end.robot.getAngle().doubleValue()) {
             current = current.saveState();
             current.robot.setAngle(current.robot.getAngle().add(BigDecimal.valueOf(0.1)));
             states.add(current);
         }
-        while(current.robot.getAngle().intValue() > end.robot.getAngle().intValue()) {
+        while(current.robot.getAngle().doubleValue() > end.robot.getAngle().doubleValue()) {
             current = current.saveState();
             current.robot.setAngle(current.robot.getAngle().subtract(BigDecimal.valueOf(0.1)));
             states.add(current);
@@ -339,8 +339,8 @@ public class State {
     }
 
     public boolean isBoxCollision(Box box) {
-        if(box.getX() < 0 || box.getY() < 0 || box.getX() + box.getWidth() > AREA_SIZE ||
-                box.getY() + box.getHeight() > AREA_SIZE) {
+        if(box.getX() < 200 || box.getY() < 200 || box.getX() + box.getWidth() > AREA_SIZE - 200 ||
+                box.getY() + box.getHeight() > AREA_SIZE - 200) {
             return true;
         }
 
@@ -415,6 +415,16 @@ public class State {
         for(int i = 0; i < mBoxes.size(); i++) {
             if(Math.abs(mBoxes.get(i).getX() - state.mBoxes.get(i).getX()) > CLOSE ||
                     Math.abs(mBoxes.get(i).getY() - state.mBoxes.get(i).getY()) > CLOSE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isCloseObs(State state) {
+        for(int i = 0; i < mObstacles.size(); i++) {
+            if(Math.abs(mObstacles.get(i).getX() - state.mObstacles.get(i).getX()) > CLOSE ||
+                    Math.abs(mObstacles.get(i).getY() - state.mObstacles.get(i).getY()) > CLOSE) {
                 return false;
             }
         }
