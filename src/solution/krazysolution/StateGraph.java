@@ -58,8 +58,6 @@ public class StateGraph {
         this.goal = goal;
         this.type = type;
         this.index = boxIndex;
-
-        System.out.println(start.state + " to " + goal.state);
     }
 
     public StateGraph(StateNode start, StateNode goal) {
@@ -101,10 +99,12 @@ public class StateGraph {
         s1.robot.rotateClockwise();
         State s2 = state.saveState();
         s2.robot.rotateAntiClockwise();
-        if (!s1.isRobotCollision()) {
+        if (!s1.isRobotCollision() || (type == GraphType.BOXES && s1.isCloseBox(goal.state)) ||
+                (type == GraphType.OBSTACLES && s1.isCloseObs(goal.state))) {
             states.add(s1);
         }
-        if (!s2.isRobotCollision()) {
+        if (!s2.isRobotCollision() || (type == GraphType.BOXES && s2.isCloseBox(goal.state)) ||
+                (type == GraphType.OBSTACLES && s2.isCloseObs(goal.state))) {
             states.add(s2);
         }
         return states;
@@ -120,16 +120,24 @@ public class StateGraph {
         s3.robot.moveLeft();
         State s4 = state.saveState();
         s4.robot.moveRight();
-        if (!s1.isRobotCollision()) {
+        if (!s1.isRobotCollision() ||
+                (type == GraphType.BOXES && s1.isCloseBox(goal.state)) ||
+                (type == GraphType.OBSTACLES && s1.isCloseObs(goal.state))) {
             states.add(s1);
         }
-        if (!s2.isRobotCollision()) {
+        if (!s2.isRobotCollision() ||
+                (type == GraphType.BOXES && s2.isCloseBox(goal.state)) ||
+                (type == GraphType.OBSTACLES && s2.isCloseObs(goal.state))) {
             states.add(s2);
         }
-        if (!s3.isRobotCollision()) {
+        if (!s3.isRobotCollision() ||
+                (type == GraphType.BOXES && s3.isCloseBox(goal.state)) ||
+                (type == GraphType.OBSTACLES && s3.isCloseObs(goal.state))) {
             states.add(s3);
         }
-        if (!s4.isRobotCollision()) {
+        if (!s4.isRobotCollision() ||
+                (type == GraphType.BOXES && s4.isCloseBox(goal.state)) ||
+                (type == GraphType.OBSTACLES && s4.isCloseObs(goal.state))) {
             states.add(s4);
         }
         return states;
@@ -353,17 +361,21 @@ public class StateGraph {
         spec.loadProblem("problems/inputK.txt");
 
         State startState = new State(spec);
-        State gState1 = startState.saveState();
-        Box.MBox box = gState1.mBoxes.get(0);
-        box.setX(box.getXGoal());
-        box.setY(box.getYGoal());
-        List<StateGraph.StateNode> nodes = new StateGraph(new StateNode(startState), new StateNode(gState1),
-                GraphType.BOXES, 0).aStar();
-        List<State> path = new ArrayList<>();
-        for (StateGraph.StateNode node : nodes) {
-            path.add(node.state);
+        State gState = startState.saveState();
+        startState.robot.setX(startState.mObstacles.get(0).getX());
+        startState.robot.setY(startState.mObstacles.get(0).getY() + startState.mObstacles.get(0).getHeight()/2);
+        startState.robot.setAngle(BigDecimal.valueOf(90));
+        gState.robot.setX(startState.mObstacles.get(0).getX() + startState.mObstacles.get(0).getWidth());
+        gState.robot.setY(startState.mObstacles.get(0).getY() + startState.mObstacles.get(0).getHeight()/2);
+        gState.robot.setAngle(BigDecimal.valueOf(90));
+
+        StateGraph graph = new StateGraph(new StateNode(startState), new StateNode(gState), GraphType.ROBOT, -1);
+        List<StateGraph.StateNode> states = graph.aStar();
+        List<State> interimStates = new ArrayList<>();
+        for(int i = 0; i < states.size(); i++) {
+            interimStates.add(states.get(i).state);
         }
-        System.out.println(State.outputString(path));
+        System.out.println(State.outputString(interimStates));
 
         /*State startState = new State(spec);
         startState.robot.setX(2000);

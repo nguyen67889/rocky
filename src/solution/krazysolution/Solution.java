@@ -146,6 +146,7 @@ public class Solution {
             throw new RuntimeException("Invalid box index");
         }
 
+        System.out.println("Moving to side " + alignment + " of " + index);
         switch (alignment) {
             case BOTTOM:
                 x = box.getX() + box.getWidth() / 2;
@@ -169,12 +170,16 @@ public class Solution {
                 break;
         }
 
+        System.out.println(":" + x + ", " + y);
+
         State goalState = startState.saveState();
         goalState.robot.setX(x);
         goalState.robot.setY(y);
         goalState.robot.setAngle(a);
 
         List<StateGraph.StateNode> nodes = new StateGraph(new StateGraph.StateNode(startState),
+                new StateGraph.StateNode(goalState), StateGraph.GraphType.ROBOT, -1).aStar();
+        nodes = new StateGraph(new StateGraph.StateNode(startState),
                 new StateGraph.StateNode(goalState), StateGraph.GraphType.ROBOT, -1).aStar();
         List<State> path = new ArrayList<>();
 
@@ -211,7 +216,7 @@ public class Solution {
             if(currentState.current > 0) {
                 box = currentState.mBoxes.get(currentState.current - 1);
             } else if(currentState.current < 0 ) {
-                box = currentState.mBoxes.get(-currentState.current - 1);
+                box = currentState.mObstacles.get(-currentState.current - 1);
             } else {
                 throw new RuntimeException("Invalid box index");
             }
