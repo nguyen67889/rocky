@@ -1,2 +1,74 @@
 \section{Agent Design}
-Wall-E, basically.
+
+\subsection{State Space}
+The state of the problem is the state of the area containing the robot,
+boxes and obstacles - that is, a continuous area of width and height 1 unit.
+This state models the following:
+
+\begin{itemize}
+\item The positions (x and y coordinates) of the boxes, obstacles, and robot
+\item The dimensions (width and height) of the boxes, obstacles, and robot
+\item The orientation of the robot
+\end{itemize}
+
+The state can be formally described as:
+
+DO THIS
+
+Where n is the number of movable boxes, p the number of movable obstacles, and
+q the number of static obstacles. This definition means that the state of the
+agent can be described as a $4 + 3n + 3p + 4q$ element tuple.
+
+As entities cannot collide with each other, not all states in the state space will be reachable.
+
+
+\subsection{Action Space}
+A single action in the box moving agent involves one of the following:
+
+\begin{itemize}
+\item Moving the robot by at most 0.001 units in a specific direction
+\item Rotating the robot by at most $arccos(1-\dfrac{0.001^2}{2w}))$ radians,
+      where w is the width of the robot and $w \in [0.05,0.15]$ (this distance will
+      result in the robot’s end-points moving by at most 0.001 units)
+\end{itemize}
+
+
+\subsection{World Dynamics}
+When the robot makes an action, it is possible that components of the world
+(i.e. the boxes) will also change.
+If the robot is aligned with a movable object, with more than ¾ of its width
+touching the object, the box will move with the robot
+(if the robot moves in the direction of the box).
+This can be modelled as the following function:
+
+DO THIS
+
+This function can be represented as a table such as the following:
+
+
+\subsection{Percept Space}
+
+The agent used for moving boxes has perfect observation of the entire area
+(i.e. can see the entire state of the area at all points in time).
+This includes the details of all boxes and obstacles, as well as the robot.
+Because of this, the perception space is the same as the state space, i.e:
+
+$$
+O = S
+$$
+
+A perception function is also not required.
+
+
+\subsection{Utility Function}
+A utility function that rewards the agent for moving a box to its goal will be used.
+The function will also provide a small reward to the agent for moving a box closer to its goal.
+Moving a box into an obstacle will give a negative reward.
+
+Eg.
+\begin{itemize}
+\item +10 when a box is placed in its goal location
+\item +1 when a box is moved closer to its goal
+\item 0 when a box is moved away from its goal
+\item -10 when a box collides with an obstacle
+\end{itemize}

@@ -1,2 +1,30 @@
 \section{Method}
-Search method description. (pseudo code, ADTs)
+
+\subsection{Discretization}
+When designing the box moving agent, a variety of discretization algorithms were considered, listed as follows:
+
+\begin{itemize}
+\item Visibility graph
+\item Uniform grid discretization
+\item Probabilistic Roadmapping
+\item Rapidly Exploring Random Trees
+\end{itemize}
+
+Uniform grid discretization was chosen as the most appropriate of these, due to the axis-aligned structure of the problem’s state.
+
+
+\subsection{Search}
+The search algorithm chosen for the robot box mover problem is A*
+
+There are three aspects of a search algorithm to consider when assessing its performance in a given context - completeness, optimality, and complexity.
+
+Judged on these three aspects, the A* algorithm implemented for this assignment has the following properties:
+
+\begin{itemize}
+\item \textbf{Completeness:} An A* algorithm is considered complete when all edges have a cost greater than ε, where ε is a small positive number. In this case, all edges do have a cost greater than 0, so the algorithm is complete, and will find a solution whenever one exists.
+\item \textbf{Optimality:} An algorithm is considered optimal if it is complete, and if the heuristic chosen for the algorithm is admissible.
+
+A heuristic, h(n), is said to be admissible if it never overestimates the cost. That is, h(n)h*(n), where h*(n) is the true cost to reach the goal from n. This is because, if a heuristic is overestimated, then that node is less likely to be expanded (due to seemingly being a potentially longer path), even if it is actually part of the shortest path to the goal. The heuristic chosen for the search at hand is admissible based on this criteria.
+
+Since the algorithm is both complete (as stated in the previous point) and admissible, it is also considered optimal, and will return a minimum cost path whenever one exists.
+\end{itemize}
