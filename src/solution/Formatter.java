@@ -1,30 +1,12 @@
 package solution;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
-import problem.RobotConfig;
 import solution.boxes.Movable;
 import solution.krazysolution.Robot;
 import solution.krazysolution.State;
 
 public class Formatter {
-
-    /**
-     * Format the output of a robots current configuration.
-     *
-     * @param robotConfig The robots configuration.
-     * @return The formatted robot config.
-     */
-    public static StringBuilder formatRobot(RobotConfig robotConfig) {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append(robotConfig.getPos().getX()).append(" ");
-        builder.append(robotConfig.getPos().getY()).append(" ");
-        builder.append(robotConfig.getOrientation());
-
-        return builder;
-    }
 
     /**
      * Format the output of a robots current configuration.
@@ -51,23 +33,6 @@ public class Formatter {
     /**
      * Format the output of box positions.
      *
-     * @param boxPositions A list of positions for boxes.
-     * @return The formatted box positions.
-     */
-    public static StringBuilder formatBoxPositions(List<Point2D> boxPositions) {
-        StringBuilder builder = new StringBuilder();
-
-        for (Point2D position : boxPositions) {
-            builder.append(" ").append(Util.round(position.getX(), 4));
-            builder.append(" ").append(Util.round(position.getY(), 4));
-        }
-
-        return builder;
-    }
-
-    /**
-     * Format the output of box positions.
-     *
      * @param movables A list of positions for boxes.
      * @return The formatted box positions.
      */
@@ -84,32 +49,6 @@ public class Formatter {
         }
 
         return builder;
-    }
-
-    /**
-     * Format output to a file for a solution to a problem.
-     *
-     * @param solution A solution instance that has been solved.
-     * @return The formatted output.
-     */
-    public static String format(Solution solution) {
-        List<List<Point2D>> boxes = solution.getBoxPositions();
-        List<RobotConfig> robots = solution.getRobotPositions();
-
-        if (boxes.size() != robots.size()) {
-            throw new RuntimeException("Robot positions and box positions differ");
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.append(robots.size()).append("\n");
-
-        for (int i = 0; i < robots.size(); i++) {
-            builder.append(Formatter.formatRobot(robots.get(i)));
-            builder.append(Formatter.formatBoxPositions(boxes.get(i)));
-            builder.append("\n");
-        }
-
-        return builder.toString();
     }
 
     /**
