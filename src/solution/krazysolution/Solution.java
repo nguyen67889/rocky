@@ -2,6 +2,10 @@ package solution.krazysolution;
 
 import problem.ProblemSpec;
 import solution.Util;
+import solution.boxes.Box;
+import solution.boxes.Movable;
+import solution.boxes.MovingBox;
+import solution.boxes.MovingObstacle;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,7 +14,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Solution {
@@ -38,7 +41,7 @@ public class Solution {
 
     private List<State> getBoxStates(State startState, int index) {
         State goalState = startState.saveState();
-        Box.MBox box = goalState.mBoxes.get(index);
+        MovingBox box = goalState.mBoxes.get(index);
         box.setX(box.getXGoal());
         box.setY(box.getYGoal());
         List<StateGraph.StateNode> nodes = new StateGraph(new StateGraph.StateNode(startState),
@@ -63,8 +66,8 @@ public class Solution {
         List<StateGraph.StateNode> nodes = null;
         while(nodes == null) {
             int index = ThreadLocalRandom.current().nextInt(goalState.mObstacles.size());
-            Box.MObs start = startState.mObstacles.get(index);
-            Box.MObs obs = goalState.mObstacles.get(index);
+            MovingObstacle start = startState.mObstacles.get(index);
+            MovingObstacle obs = goalState.mObstacles.get(index);
             obs.setX(-1);
             obs.setY(-1);
             while(goalState.isBoxCollision(obs) || startState.isCloseObs(goalState)) {
@@ -137,7 +140,7 @@ public class Solution {
     private List<State> robotStateToState(State startState, int index, Util.Side alignment) {
         int x = 0, y = 0;
         BigDecimal a = null;
-        Box.MBox box;
+        Movable box;
         if(index > 0){
             box = startState.mBoxes.get(index - 1);
         } else if(index < 0) {
@@ -212,7 +215,7 @@ public class Solution {
 
             prevState = path.get(path.size() - 1);
 
-            Box.MBox box;
+            Movable box;
             if(currentState.current > 0) {
                 box = currentState.mBoxes.get(currentState.current - 1);
             } else if(currentState.current < 0 ) {
@@ -345,7 +348,7 @@ public class Solution {
         List<StateGraph.StateNode> allStates = new ArrayList<>();
 
         for (int i = 0; i < startState.mBoxes.size(); i++) {
-            Box.MBox startBox = startState.mBoxes.get(i);
+            MovingBox startBox = startState.mBoxes.get(i);
             endState.mBoxes.get(i).setX(startBox.getXGoal());
             endState.mBoxes.get(i).setY(startBox.getYGoal());
 
@@ -392,23 +395,6 @@ public class Solution {
             nextState.robot.setY(latestConfig.getY());
             nextState.robot.setAngle(latestConfig.getAngle());
         }
-
-        /*List<State> statesToGoal = State.interimBoxStates(result.get(result.size() - 1), endState);
-        for(int i = 0; i < statesToGoal.size() - 1; i++) {
-            State currentState = statesToGoal.get(i);
-            State nextState = statesToGoal.get(i + 1);
-            if(nextState.dir != dir || nextState.current != index) { //need to move robot
-                dir = nextState.dir;
-                index = nextState.current;
-                result.addAll(getRobotStates(currentState, nextState));
-            }
-            result.add(currentState);
-
-            Robot latestConfig = result.get(result.size() - 1).robot;
-            nextState.robot.setX(latestConfig.getX());
-            nextState.robot.setY(latestConfig.getY());
-            nextState.robot.setAngle(latestConfig.getAngle());
-        }*/
 
         return result;
     }

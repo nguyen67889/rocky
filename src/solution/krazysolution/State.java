@@ -1,9 +1,7 @@
 package solution.krazysolution;
 
-import problem.MovingBox;
 import problem.ProblemSpec;
 import problem.RobotConfig;
-import problem.StaticObstacle;
 import solution.Util;
 
 import java.awt.geom.Line2D;
@@ -11,14 +9,18 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
 import java.util.*;
+import solution.boxes.Box;
+import solution.boxes.MovingBox;
+import solution.boxes.MovingObstacle;
+import solution.boxes.StaticObstacle;
 
 public class State {
     private final static int AREA_SIZE = 10000; //area of the arena
     private final static int CLOSE = 100;
 
-    public List<Box.MBox> mBoxes;
-    public List<Box.MObs> mObstacles;
-    public List<Box.Obs> sObstacles;
+    public List<MovingBox> mBoxes;
+    public List<MovingObstacle> mObstacles;
+    public List<StaticObstacle> sObstacles;
     public Robot robot;
 
     public Util.Side dir = null;
@@ -32,14 +34,14 @@ public class State {
         BigDecimal robotA = Util.round(Math.toDegrees(specRobot.getOrientation()), 4);
         this.robot = new Robot(robotX, robotY, robotW, robotA);
 
-        List<StaticObstacle> obstacles = spec.getStaticObstacles();
+        List<problem.StaticObstacle> obstacles = spec.getStaticObstacles();
         sObstacles = new ArrayList<>();
-        for(StaticObstacle obs : obstacles) {
+        for(problem.StaticObstacle obs : obstacles) {
             int obsX = Util.round(obs.getRect().getX() * AREA_SIZE, 0).intValue();
             int obsY = Util.round(obs.getRect().getY() * AREA_SIZE, 0).intValue();
             int obsW = Util.round(obs.getRect().getWidth() * AREA_SIZE, 0).intValue();
             int obsH = Util.round(obs.getRect().getHeight() * AREA_SIZE, 0).intValue();
-            sObstacles.add(new Box.Obs(obsX, obsY, obsW, obsH));
+            sObstacles.add(new StaticObstacle(obsX, obsY, obsW, obsH));
         }
 
         List<problem.Box> movingBoxes = spec.getMovingBoxes();
@@ -52,7 +54,7 @@ public class State {
             int boxW = Util.round(box.getWidth() * AREA_SIZE, 0).intValue();
             int boxGX = Util.round(goal.getX() * AREA_SIZE, 0).intValue();
             int boxGY = Util.round(goal.getY() * AREA_SIZE, 0).intValue();
-            mBoxes.add(new Box.MBox(boxX, boxY, boxGX, boxGY, boxW));
+            mBoxes.add(new MovingBox(boxX, boxY, boxGX, boxGY, boxW));
         }
 
         List<problem.Box> movingObstacles = spec.getMovingObstacles();
@@ -61,11 +63,11 @@ public class State {
             int boxX = Util.round(box.getPos().getX() * AREA_SIZE, 0).intValue();
             int boxY = Util.round(box.getPos().getY() * AREA_SIZE, 0).intValue();
             int boxW = Util.round(box.getWidth() * AREA_SIZE, 0).intValue();
-            mObstacles.add(new Box.MObs(boxX, boxY, boxW));
+            mObstacles.add(new MovingObstacle(boxX, boxY, boxW));
         }
     }
 
-    public State(Robot robot, List<Box.MBox> mBoxes, List<Box.MObs> mObstacles, List<Box.Obs> sObstacles) {
+    public State(Robot robot, List<MovingBox> mBoxes, List<MovingObstacle> mObstacles, List<StaticObstacle> sObstacles) {
         this.mBoxes = mBoxes;
         this.mObstacles = mObstacles;
         this.sObstacles = sObstacles;
@@ -92,11 +94,11 @@ public class State {
             } else {
                 sb.append(Util.round(Math.toRadians(robot.getAngle().doubleValue() + 180), 4) + " ");
             }
-            for(Box.MBox mBox : state.mBoxes) {
+            for(MovingBox mBox : state.mBoxes) {
                 sb.append((mBox.getX() + (double)mBox.getWidth()/2)/AREA_SIZE + " ");
                 sb.append((mBox.getY() + (double)mBox.getHeight()/2)/AREA_SIZE + " ");
             }
-            for(Box.MObs mObs : state.mObstacles) {
+            for(MovingObstacle mObs : state.mObstacles) {
                 sb.append((mObs.getX() + (double)mObs.getWidth()/2)/AREA_SIZE + " ");
                 sb.append((mObs.getY() + (double)mObs.getHeight()/2)/AREA_SIZE + " ");
             }
@@ -117,37 +119,21 @@ public class State {
 
         while(current.robot.getX() < end.robot.getX()) {
             current = current.saveState();
-            /*Box.MBox aligned = current.getRobotAlignment();
-            if(aligned != null && current.getRobotAlignmentSide(aligned) == Util.Side.LEFT) {
-                aligned.setX(aligned.getX() + 10);
-            }*/
             current.robot.setX(current.robot.getX() + 10);
             states.add(current);
         }
         while(current.robot.getX() > end.robot.getX()) {
             current = current.saveState();
-            /*Box.MBox aligned = current.getRobotAlignment();
-            if(aligned != null && current.getRobotAlignmentSide(aligned) == Util.Side.RIGHT) {
-                aligned.setX(aligned.getX() - 10);
-            }*/
             current.robot.setX(current.robot.getX() - 10);
             states.add(current);
         }
         while(current.robot.getY() < end.robot.getY()) {
             current = current.saveState();
-            /*Box.MBox aligned = current.getRobotAlignment();
-            if(aligned != null && current.getRobotAlignmentSide(aligned) == Util.Side.BOTTOM) {
-                aligned.setY(aligned.getY() + 10);
-            }*/
             current.robot.setY(current.robot.getY() + 10);
             states.add(current);
         }
         while(current.robot.getY() > end.robot.getY()) {
             current = current.saveState();
-            /*Box.MBox aligned = current.getRobotAlignment();
-            if(aligned != null && current.getRobotAlignmentSide(aligned) == Util.Side.TOP) {
-                aligned.setY(aligned.getY() - 10);
-            }*/
             current.robot.setY(current.robot.getY() - 10);
             states.add(current);
         }
@@ -257,13 +243,13 @@ public class State {
 
     public List<Rectangle2D> getAllRects() {
         List<Rectangle2D> rects = new ArrayList<>();
-        for(Box.MBox mBox : mBoxes) {
+        for(MovingBox mBox : mBoxes) {
             rects.add(mBox.getRect());
         }
-        for(Box.MObs mObs : mObstacles) {
+        for(MovingObstacle mObs : mObstacles) {
             rects.add(mObs.getRect());
         }
-        for(Box.Obs obs : sObstacles) {
+        for(StaticObstacle obs : sObstacles) {
             rects.add(obs.getRect());
         }
         return rects;
@@ -292,7 +278,7 @@ public class State {
                 robot.getY1() >= AREA_SIZE || robot.getY2() >= AREA_SIZE;
     }
 
-    public Box.MBox getRobotAlignment() {
+    public MovingBox getRobotAlignment() {
         if(robot.getAngle().intValue() != 90 && robot.getAngle().intValue() != 0) {
             return null; //robot isn't aligned - why bother?
         }
@@ -302,7 +288,7 @@ public class State {
         int[] lastXs = robot.getLastXs();
         int[] lastYs = robot.getLastYs();
 
-        for(Box.MBox mBox : mBoxes) {
+        for(MovingBox mBox : mBoxes) {
             boolean alignedFirst = true;
             boolean alignedLast = true;
             for(int i = 0; i < 4; i++) {
@@ -344,17 +330,17 @@ public class State {
             return true;
         }
 
-        for(Box.MBox mBox : mBoxes) {
+        for(MovingBox mBox : mBoxes) {
             if(!box.equals(mBox) && mBox.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
         }
-        for(Box.MObs mObs : mObstacles) {
+        for(MovingObstacle mObs : mObstacles) {
             if(!box.equals(mObs) && mObs.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
         }
-        for(Box.Obs obs : sObstacles) {
+        for(StaticObstacle obs : sObstacles) {
             if(!box.equals(obs) && obs.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
@@ -365,17 +351,17 @@ public class State {
 
     public State saveState() {
         Robot robot = this.robot.copy();
-        List<Box.MBox> mBoxes = new ArrayList<>();
-        List<Box.MObs> mObstacles = new ArrayList<>();
-        List<Box.Obs> sObstacles = new ArrayList<>();
+        List<MovingBox> mBoxes = new ArrayList<>();
+        List<MovingObstacle> mObstacles = new ArrayList<>();
+        List<StaticObstacle> sObstacles = new ArrayList<>();
 
-        for(Box.MBox mBox : this.mBoxes) {
+        for(MovingBox mBox : this.mBoxes) {
             mBoxes.add(mBox.copy());
         }
-        for(Box.MObs mObs : this.mObstacles) {
+        for(MovingObstacle mObs : this.mObstacles) {
             mObstacles.add(mObs.copy());
         }
-        for(Box.Obs obs : this.sObstacles) {
+        for(StaticObstacle obs : this.sObstacles) {
             sObstacles.add(obs.copy());
         }
 
