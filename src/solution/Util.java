@@ -17,6 +17,11 @@ public class Util {
         return number.setScale(places, BigDecimal.ROUND_HALF_UP);
     }
 
+    public static int round(double value) {
+        BigDecimal number = new BigDecimal(value);
+        return number.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
+    }
+
     public static int roundHalf(double value) {
         BigDecimal number = new BigDecimal(value);
         return number.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();

@@ -15,8 +15,8 @@ import solution.boxes.MovingObstacle;
 import solution.boxes.StaticObstacle;
 
 public class State {
-    private final static int AREA_SIZE = 10000; //area of the arena
-    private final static int CLOSE = 100;
+    public final static int AREA_SIZE = 10000; //area of the arena
+    public final static int CLOSE = 100;
 
     public List<MovingBox> mBoxes;
     public List<MovingObstacle> mObstacles;
@@ -28,20 +28,16 @@ public class State {
 
     public State(ProblemSpec spec) {
         RobotConfig specRobot = spec.getInitialRobotConfig();
-        int robotX = Util.round(specRobot.getPos().getX() * AREA_SIZE, 0).intValue();
-        int robotY = Util.round(specRobot.getPos().getY() * AREA_SIZE, 0).intValue();
-        int robotW = Util.round(spec.getRobotWidth() * AREA_SIZE, 0).intValue();
+        int robotX = Util.round(specRobot.getPos().getX() * AREA_SIZE);
+        int robotY = Util.round(specRobot.getPos().getY() * AREA_SIZE);
+        int robotW = Util.round(spec.getRobotWidth() * AREA_SIZE);
         BigDecimal robotA = Util.round(Math.toDegrees(specRobot.getOrientation()), 4);
         this.robot = new Robot(robotX, robotY, robotW, robotA);
 
         List<problem.StaticObstacle> obstacles = spec.getStaticObstacles();
         sObstacles = new ArrayList<>();
         for(problem.StaticObstacle obs : obstacles) {
-            int obsX = Util.round(obs.getRect().getX() * AREA_SIZE, 0).intValue();
-            int obsY = Util.round(obs.getRect().getY() * AREA_SIZE, 0).intValue();
-            int obsW = Util.round(obs.getRect().getWidth() * AREA_SIZE, 0).intValue();
-            int obsH = Util.round(obs.getRect().getHeight() * AREA_SIZE, 0).intValue();
-            sObstacles.add(new StaticObstacle(obsX, obsY, obsW, obsH));
+            sObstacles.add(StaticObstacle.convert(obs));
         }
 
         List<problem.Box> movingBoxes = spec.getMovingBoxes();
@@ -49,21 +45,14 @@ public class State {
         for(int i = 0; i < movingBoxes.size(); i++) {
             problem.Box box = movingBoxes.get(i);
             Point2D goal = spec.getMovingBoxEndPositions().get(i);
-            int boxX = Util.round(box.getPos().getX() * AREA_SIZE, 0).intValue();
-            int boxY = Util.round(box.getPos().getY() * AREA_SIZE, 0).intValue();
-            int boxW = Util.round(box.getWidth() * AREA_SIZE, 0).intValue();
-            int boxGX = Util.round(goal.getX() * AREA_SIZE, 0).intValue();
-            int boxGY = Util.round(goal.getY() * AREA_SIZE, 0).intValue();
-            mBoxes.add(new MovingBox(boxX, boxY, boxGX, boxGY, boxW));
+
+            mBoxes.add(MovingBox.convert(box, goal));
         }
 
         List<problem.Box> movingObstacles = spec.getMovingObstacles();
         mObstacles = new ArrayList<>();
         for(problem.Box box : movingObstacles) {
-            int boxX = Util.round(box.getPos().getX() * AREA_SIZE, 0).intValue();
-            int boxY = Util.round(box.getPos().getY() * AREA_SIZE, 0).intValue();
-            int boxW = Util.round(box.getWidth() * AREA_SIZE, 0).intValue();
-            mObstacles.add(new MovingObstacle(boxX, boxY, boxW));
+            mObstacles.add(MovingObstacle.convert(box));
         }
     }
 
@@ -270,58 +259,6 @@ public class State {
             }
         }
         return false;
-    }
-
-    public boolean isRobotOutOfBounds() {
-        return robot.getX1() < 0 || robot.getY1() < 0 || robot.getX2() < 0 || robot.getY2() < 0 ||
-                robot.getX1() >= AREA_SIZE || robot.getX2() >= AREA_SIZE ||
-                robot.getY1() >= AREA_SIZE || robot.getY2() >= AREA_SIZE;
-    }
-
-    public MovingBox getRobotAlignment() {
-        if(robot.getAngle().intValue() != 90 && robot.getAngle().intValue() != 0) {
-            return null; //robot isn't aligned - why bother?
-        }
-
-        int[] firstXs = robot.getFirstXs();
-        int[] firstYs = robot.getFirstYs();
-        int[] lastXs = robot.getLastXs();
-        int[] lastYs = robot.getLastYs();
-
-        for(MovingBox mBox : mBoxes) {
-            boolean alignedFirst = true;
-            boolean alignedLast = true;
-            for(int i = 0; i < 4; i++) {
-                alignedFirst = alignedFirst && mBox.getRect().contains(new Point2D.Double(firstXs[i], firstYs[i]));
-                alignedLast = alignedLast && mBox.getRect().contains(new Point2D.Double(lastXs[i], lastYs[i]));
-            }
-            if(alignedFirst || alignedLast) {
-                return mBox;
-            }
-        }
-        return null;
-
-        //TODO: handle movable obstacles
-    }
-
-    public Util.Side getRobotAlignmentSide(Box box) {
-
-        int[] firstXs = robot.getFirstXs();
-        int[] firstYs = robot.getFirstYs();
-
-        Point2D[] pts = {new Point2D.Double(firstXs[1], firstYs[1]),
-            new Point2D.Double(firstXs[2], firstYs[2])};
-
-        if(box.getBottomEdge().contains(pts[0]) && box.getBottomEdge().contains(pts[1])) {
-            return Util.Side.BOTTOM;
-        } else if(box.getLeftEdge().contains(pts[0]) && box.getLeftEdge().contains(pts[1])) {
-            return Util.Side.LEFT;
-        } else if(box.getRightEdge().contains(pts[0]) && box.getLeftEdge().contains(pts[1])) {
-            return Util.Side.RIGHT;
-        } else if(box.getTopEdge().contains(pts[0]) && box.getLeftEdge().contains(pts[1])) {
-            return Util.Side.TOP;
-        }
-        return null;
     }
 
     public boolean isBoxCollision(Box box) {
