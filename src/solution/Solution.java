@@ -13,12 +13,23 @@ import tester.Tester;
 
 public class Solution {
 
+    // The problem specification to solve
     private ProblemSpec spec;
 
+    /**
+     * Construct a new solution with based on a problem spec.
+     *
+     * @param spec The problem to solve.
+     */
     public Solution(ProblemSpec spec) {
         this.spec = spec;
     }
 
+    /**
+     * Return the solution to the problem in terms of a list of atomic states.
+     *
+     * @return The list of states to solve a problem.
+     */
     public List<State> solve() {
         return new ArrayList<>();
     }
