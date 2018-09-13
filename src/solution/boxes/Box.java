@@ -7,10 +7,10 @@ public abstract class Box {
     protected static final int DIST = 100;
     protected static final String FORMAT = "%s(x: %d, y: %d, w: %d, h: %d)";
 
-    int x;
-    int y;
-    int width;
-    int height;
+    protected int x;
+    protected int y;
+    protected int width;
+    protected int height;
 
     public Box(int x, int y, int width) {
         this(x, y, width, width);
