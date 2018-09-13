@@ -1,4 +1,4 @@
-package solution.krazysolution;
+package solution;
 
 import java.math.BigDecimal;
 

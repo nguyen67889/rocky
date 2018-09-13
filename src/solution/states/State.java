@@ -13,7 +13,7 @@ import solution.boxes.Box;
 import solution.boxes.MovingBox;
 import solution.boxes.MovingObstacle;
 import solution.boxes.StaticObstacle;
-import solution.krazysolution.Robot;
+import solution.Robot;
 
 public class State {
     public final static int AREA_SIZE = 10000; //area of the arena

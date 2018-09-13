@@ -1,4 +1,4 @@
-package solution;
+package solution.states;
 
 import java.util.HashSet;
 import java.util.Set;
