@@ -93,6 +93,10 @@ public abstract class Box {
                 width + 2 * expanded, height + 2 * expanded);
     }
 
+    /**
+     * Creates a copy of the Box
+     * @return the copied Box
+     */
     public abstract Box copy();
 
     public boolean equals(Object obj) {
