@@ -33,7 +33,7 @@ public abstract class Box {
 
     public Rectangle2D getExpandedRect() {
         //int expanded = (int)Math.ceil(width/Math.sqrt(2));
-        int expanded = 300;
+        int expanded = 200;
         return new Rectangle2D.Double(x - expanded, y - expanded, width + 2*expanded, height + 2*expanded);
     }
 
