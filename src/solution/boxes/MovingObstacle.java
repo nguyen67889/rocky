@@ -1,8 +1,9 @@
 package solution.boxes;
 
-public class MovingObstacle extends MovingBox {
+public class MovingObstacle extends Movable {
+
     public MovingObstacle(int x, int y, int width) {
-        super(x, y, x, y, width);
+        super(x, y, width);
     }
 
     public MovingObstacle copy() {

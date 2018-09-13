@@ -12,15 +12,15 @@ public abstract class Box {
     int width;
     int height;
 
+    public Box(int x, int y, int width) {
+        this(x, y, width, width);
+    }
+
     public Box(int x, int y, int width, int height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-    }
-
-    public Box(int x, int y, int width) {
-        this(x, y, width, width);
     }
 
     public int getX() {
