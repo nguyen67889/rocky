@@ -1,39 +1,32 @@
 package solution;
 
-import problem.Box;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * A point in the grid.
+ * A generic Node.
  *
- * The point can be empty or have a box.
- *
- * @param <T> Numeric points of the grid
+ * @param <T> The type of object stored in the node.
  */
-public class Node<T extends Number> {
+public class Node<T> {
 
-    // The box at the point, null if empty
-    private Box box;
-
-    // Coordinates of the point
-    private T x;
-    private T y;
+    // The object stored in the node.
+    private T item;
 
     // Information about the point needed for A* algorithm
     public int g;
     public int h;
+    public Set<Node<T>> connected;
     public Node<T> parent;
 
     /**
-     * Construct a new point in the grid.
+     * Construct a new Node.
      *
-     * @param box The box at the point
-     * @param x X location of point
-     * @param y Y location of point
+     * @param item The item stored in this node
      */
-    public Node(Box box, T x, T y) {
-        this.box = box;
-        this.x = x;
-        this.y = y;
+    public Node(T item) {
+        this.item = item;
+        connected = new HashSet<>();
     }
 
     /**
@@ -41,29 +34,29 @@ public class Node<T extends Number> {
      *
      * @return The box at this point or null if point is empty.
      */
-    public Box getBox() {
-        return box;
+    public T getItem() {
+        return item;
     }
 
-    /**
-     * @return X location of point
-     */
-    T getX() {
-        return x;
-    }
-
-    /**
-     * @return Y location of point
-     */
-    T getY() {
-        return y;
-    }
-
-    int f() {
+    public int f() {
         return g + h;
     }
 
+    @Override
     public String toString() {
-        return "(" + x + "," + y + " @ " + getBox() + ")";
+        return item.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return item.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Node)) {
+            return false;
+        }
+        return item.equals(((Node) obj).item);
     }
 }

@@ -37,8 +37,8 @@ public class Solution {
         MovingBox box = goalState.mBoxes.get(index);
         box.setX(box.getXGoal());
         box.setY(box.getYGoal());
-        List<StateGraph.StateNode> nodes = new StateGraph(new StateGraph.StateNode(startState),
-                new StateGraph.StateNode(goalState), StateGraph.GraphType.BOXES, index).aStar();
+        List<Node<State>> nodes = new StateGraph(new Node<>(startState),
+                new Node<>(goalState), StateGraph.GraphType.BOXES, index).aStar();
 
         if(nodes == null) {
             return null;
@@ -46,7 +46,7 @@ public class Solution {
 
         List<State> path = new ArrayList<>();
         for (int i = 0; i < nodes.size() - 1; i++) {
-            path.addAll(State.interimBoxStates(nodes.get(i).state, nodes.get(i + 1).state));
+            path.addAll(State.interimBoxStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
         }
         path.addAll(State.interimBoxStates(path.get(path.size() - 1), goalState));
 
@@ -55,7 +55,7 @@ public class Solution {
 
     private List<State> getMovingBoxStates(State startState) {
         State goalState = startState.saveState();
-        List<StateGraph.StateNode> nodes = null;
+        List<Node<State>> nodes = null;
         while(nodes == null) {
             int index = ThreadLocalRandom.current().nextInt(goalState.mObstacles.size());
             MovingObstacle start = startState.mObstacles.get(index);
@@ -69,13 +69,13 @@ public class Solution {
                 obs.setY(start.getY() + deltaY);
             }
 
-            nodes = new StateGraph(new StateGraph.StateNode(startState), new StateGraph.StateNode(goalState),
+            nodes = new StateGraph(new Node<>(startState), new Node<>(goalState),
                     StateGraph.GraphType.OBSTACLES, index).aStar();
         }
 
         List<State> path = new ArrayList<>();
         for (int i = 0; i < nodes.size() - 1; i++) {
-            path.addAll(State.interimBoxStates(nodes.get(i).state, nodes.get(i + 1).state));
+            path.addAll(State.interimBoxStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
         }
         path.addAll(State.interimBoxStates(path.get(path.size() - 1), goalState));
 
@@ -158,12 +158,12 @@ public class Solution {
         goalState.robot.setY(y);
         goalState.robot.setAngle(a);
 
-        List<StateGraph.StateNode> nodes = new StateGraph(new StateGraph.StateNode(startState),
-                new StateGraph.StateNode(goalState), StateGraph.GraphType.ROBOT, -1).aStar();
+        List<Node<State>> nodes = new StateGraph(new Node<State>(startState),
+                new Node<State>(goalState), StateGraph.GraphType.ROBOT, -1).aStar();
         List<State> path = new ArrayList<>();
 
         for (int i = 0; i < nodes.size() - 1; i++) {
-            path.addAll(State.interimStates(nodes.get(i).state, nodes.get(i + 1).state));
+            path.addAll(State.interimStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
         }
 
         path.addAll(State.interimStates(path.get(path.size() - 1), goalState));

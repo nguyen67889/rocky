@@ -1,5 +1,6 @@
 package solution.states;
 
+import solution.Node;
 import solution.Util;
 
 import java.util.*;
@@ -7,53 +8,16 @@ import solution.boxes.MovingBox;
 
 public class StateGraph {
 
-    public static class StateNode {
-
-        public Set<StateNode> connected;
-        public State state;
-
-        public StateNode(State state) {
-            this.state = state;
-            connected = new HashSet<>();
-        }
-
-        @Override
-        public int hashCode() {
-            return state.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof StateNode && state
-                    .equals(((StateNode) obj).state);
-        }
-
-        @Override
-        public String toString() {
-            return state.toString();
-        }
-
-        //FOLLOWING CODE USED FOR A*
-        public int g;
-        public int h;
-
-        public int f() {
-            return g + h;
-        }
-
-        public StateNode parent;
-    }
-
     public enum GraphType {
         ROBOT, BOXES, OBSTACLES, ALL
     }
 
-    private StateNode start;
-    private StateNode goal;
+    private Node<State> start;
+    private Node<State> goal;
     private GraphType type;
     private int index; //the box we are moving
 
-    public StateGraph(StateNode start, StateNode goal, GraphType type,
+    public StateGraph(Node<State> start, Node<State> goal, GraphType type,
             int boxIndex) {
         this.start = start;
         this.goal = goal;
@@ -61,16 +25,16 @@ public class StateGraph {
         this.index = boxIndex;
     }
 
-    public StateGraph(StateNode start, StateNode goal) {
+    public StateGraph(Node<State> start, Node<State> goal) {
         this(start, goal, GraphType.ALL, -1);
     }
 
-    private int cost(StateNode start, StateNode end) {
+    private int cost(Node<State> start, Node<State> end) {
         //TODO modify to be better
         int cost = 0;
-        for (int i = 0; i < start.state.mBoxes.size(); i++) {
-            MovingBox startBox = start.state.mBoxes.get(i);
-            MovingBox endBox = end.state.mBoxes.get(i);
+        for (int i = 0; i < start.getItem().mBoxes.size(); i++) {
+            MovingBox startBox = start.getItem().mBoxes.get(i);
+            MovingBox endBox = end.getItem().mBoxes.get(i);
             cost += Math.abs(startBox.getX() - endBox.getX()) +
                     Math.abs(startBox.getY() - endBox.getY());
             if (startBox.getY() != endBox.getY() && startBox.getX() != endBox
@@ -78,18 +42,18 @@ public class StateGraph {
                 cost += 100;
             }
         }
-        if (!start.state.robot.getAngle().equals(goal.state.robot.getAngle())) {
+        if (!start.getItem().robot.getAngle().equals(goal.getItem().robot.getAngle())) {
             cost += 100;
         }
         return cost;
     }
 
-    private int nextCost(StateNode start, StateNode end) {
+    private int nextCost(Node<State> start, Node<State> end) {
         int result = 1;
-        if (start.state.dir != end.state.dir) {
+        if (start.getItem().dir != end.getItem().dir) {
             result += 1000;
         }
-        if (start.state.current != end.state.current) {
+        if (start.getItem().current != end.getItem().current) {
             result += 10000;
         }
         return result;
@@ -101,12 +65,12 @@ public class StateGraph {
         s1.robot.rotateClockwise();
         State s2 = state.saveState();
         s2.robot.rotateAntiClockwise();
-        if (!s1.isRobotCollision() || (type == GraphType.BOXES && s1.isCloseBox(goal.state)) ||
-                (type == GraphType.OBSTACLES && s1.isCloseObs(goal.state))) {
+        if (!s1.isRobotCollision() || (type == GraphType.BOXES && s1.isCloseBox(goal.getItem())) ||
+                (type == GraphType.OBSTACLES && s1.isCloseObs(goal.getItem()))) {
             states.add(s1);
         }
-        if (!s2.isRobotCollision() || (type == GraphType.BOXES && s2.isCloseBox(goal.state)) ||
-                (type == GraphType.OBSTACLES && s2.isCloseObs(goal.state))) {
+        if (!s2.isRobotCollision() || (type == GraphType.BOXES && s2.isCloseBox(goal.getItem())) ||
+                (type == GraphType.OBSTACLES && s2.isCloseObs(goal.getItem()))) {
             states.add(s2);
         }
         return states;
@@ -123,23 +87,23 @@ public class StateGraph {
         State s4 = state.saveState();
         s4.robot.moveRight();
         if (!s1.isRobotCollision() ||
-                (type == GraphType.BOXES && s1.isCloseBox(goal.state)) ||
-                (type == GraphType.OBSTACLES && s1.isCloseObs(goal.state))) {
+                (type == GraphType.BOXES && s1.isCloseBox(goal.getItem())) ||
+                (type == GraphType.OBSTACLES && s1.isCloseObs(goal.getItem()))) {
             states.add(s1);
         }
         if (!s2.isRobotCollision() ||
-                (type == GraphType.BOXES && s2.isCloseBox(goal.state)) ||
-                (type == GraphType.OBSTACLES && s2.isCloseObs(goal.state))) {
+                (type == GraphType.BOXES && s2.isCloseBox(goal.getItem())) ||
+                (type == GraphType.OBSTACLES && s2.isCloseObs(goal.getItem()))) {
             states.add(s2);
         }
         if (!s3.isRobotCollision() ||
-                (type == GraphType.BOXES && s3.isCloseBox(goal.state)) ||
-                (type == GraphType.OBSTACLES && s3.isCloseObs(goal.state))) {
+                (type == GraphType.BOXES && s3.isCloseBox(goal.getItem())) ||
+                (type == GraphType.OBSTACLES && s3.isCloseObs(goal.getItem()))) {
             states.add(s3);
         }
         if (!s4.isRobotCollision() ||
-                (type == GraphType.BOXES && s4.isCloseBox(goal.state)) ||
-                (type == GraphType.OBSTACLES && s4.isCloseObs(goal.state))) {
+                (type == GraphType.BOXES && s4.isCloseBox(goal.getItem())) ||
+                (type == GraphType.OBSTACLES && s4.isCloseObs(goal.getItem()))) {
             states.add(s4);
         }
         return states;
@@ -211,30 +175,30 @@ public class StateGraph {
         return states;
     }
 
-    private Set<StateNode> getNeighbours(StateNode node) {
+    private Set<Node<State>> getNeighbours(Node<State> node) {
         Set<State> states = new HashSet<>();
-        Set<StateNode> result = new HashSet<>();
+        Set<Node<State>> result = new HashSet<>();
         switch (type) {
             case ROBOT:
-                states.addAll(getRotationStates(node.state));
-                states.addAll(getMovementStates(node.state));
+                states.addAll(getRotationStates(node.getItem()));
+                states.addAll(getMovementStates(node.getItem()));
                 break;
             case BOXES:
-                states.addAll(getBoxMovementStates(node.state));
+                states.addAll(getBoxMovementStates(node.getItem()));
                 break;
             case OBSTACLES:
-                states.addAll(getObsMovementStates(node.state));
+                states.addAll(getObsMovementStates(node.getItem()));
                 break;
         }
         for (State state : states) {
-            result.add(new StateNode(state));
+            result.add(new Node<>(state));
         }
         return result;
     }
 
-    public List<StateNode> aStar() {
-        Set<StateNode> open = new HashSet<>();
-        Set<StateNode> closed = new HashSet<>();
+    public List<Node<State>> aStar() {
+        Set<Node<State>> open = new HashSet<>();
+        Set<Node<State>> closed = new HashSet<>();
 
         start.g = 0;
         start.h = cost(start, goal);
@@ -242,9 +206,9 @@ public class StateGraph {
         open.add(start);
 
         while (open.size() > 0) {
-            StateNode current = null;
+            Node<State> current = null;
 
-            for (StateNode node : open) {
+            for (Node<State> node : open) {
                 if (current == null || node.f() < current.f()) {
                     current = node;
                 }
@@ -253,18 +217,18 @@ public class StateGraph {
             boolean isClose = false;
             switch (type) {
                 case BOXES:
-                    isClose = current.state.isCloseBox(goal.state);
+                    isClose = current.getItem().isCloseBox(goal.getItem());
                     break;
                 case OBSTACLES:
-                    isClose = current.state.isCloseObs(goal.state);
+                    isClose = current.getItem().isCloseObs(goal.getItem());
                     break;
                 case ROBOT:
-                    isClose = current.state.isCloseRobot(goal.state);
+                    isClose = current.getItem().isCloseRobot(goal.getItem());
                     break;
             }
 
             if (isClose) {
-                List<StateNode> path = new ArrayList<>();
+                List<Node<State>> path = new ArrayList<>();
                 while (current.parent != null) {
                     path.add(0, current);
                     current = current.parent;
@@ -277,7 +241,7 @@ public class StateGraph {
             open.remove(current);
             closed.add(current);
 
-            for (StateNode neighbour : getNeighbours(current)) {
+            for (Node<State> neighbour : getNeighbours(current)) {
                 int nextG = current.g + nextCost(current, neighbour);
                 if (nextG < neighbour.g) {
                     open.remove(neighbour);
