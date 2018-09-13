@@ -22,11 +22,6 @@ public class Util {
         return number.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
     }
 
-    public static int roundHalf(double value) {
-        BigDecimal number = new BigDecimal(value);
-        return number.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
-    }
-
     public static BigDecimal toRadians(double angle) {
         return Util.round(Math.toRadians(angle), 4);
     }
