@@ -31,7 +31,7 @@ public class State {
     // the robot in the state
     public Robot robot;
 
-    // the direction the robot is currently moving in
+    // the side the robot would need to move to in order to move an object
     public Util.Side dir = null;
     public int current = 0;
 
@@ -165,8 +165,8 @@ public class State {
     }
 
     /**
-     * Creates a list of all the possible states that could move the moving boxes
-     * towards their given goal
+     * Creates a list of all the possible states that could move the boxes
+     * towards their given goal (both moving boxes and movable obstacles)
      * @param start the starting state of the moving boxes
      * @param end the goal of the boxes
      * @return the list of states
@@ -235,24 +235,30 @@ public class State {
 
                 states.add(current);
             }
+            // checks for obstacles that are too far right
             while (current.mObstacles.get(i).getX() > end.mObstacles.get(i).getX()) {
                 current = current.saveState();
+                // moves the obstacle left, sets dir to be right, and saves the state
                 current.mObstacles.get(i).setX(current.mObstacles.get(i).getX() - 10);
                 current.dir = Util.Side.RIGHT;
                 current.current = -i - 1;
 
                 states.add(current);
             }
+            // checks for obstacles that are too far down
             while (current.mObstacles.get(i).getY() < end.mObstacles.get(i).getY()) {
                 current = current.saveState();
+                // moves the obstacle up, sets dir to be bottom, and saves the state
                 current.mObstacles.get(i).setY(current.mObstacles.get(i).getY() + 10);
                 current.dir = Util.Side.BOTTOM;
                 current.current = -i - 1;
 
                 states.add(current);
             }
+            // checks for obstacles that are too far up
             while (current.mObstacles.get(i).getY() > end.mObstacles.get(i).getY()) {
                 current = current.saveState();
+                // moves the obstacle up, sets dir to be top, and saves the state
                 current.mObstacles.get(i).setY(current.mObstacles.get(i).getY() - 10);
                 current.dir = Util.Side.TOP;
                 current.current = -i - 1;
@@ -264,6 +270,10 @@ public class State {
         return states;
     }
 
+    /**
+     * Gets a list of all moving boxes, moving obstacles, and static obstacles
+     * @return the list of all the boxes
+     */
     public List<Rectangle2D> getAllRects() {
         List<Rectangle2D> rects = new ArrayList<>();
         for(MovingBox mBox : mBoxes) {
@@ -278,41 +288,54 @@ public class State {
         return rects;
     }
 
+    /**
+     * Checks whether the robot is colliding with anything in the state (or is
+     * out of bounds)
+     * @return true if there is a collision, false otherwise
+     */
     public boolean isRobotCollision() {
-        if(robot.getX1() < 0 || robot.getY1() < 0 || robot.getX2() < 0 || robot.getY2() < 0 ||
+        // checks if the robot has gone out of bounds
+        if (robot.getX1() < 0 || robot.getY1() < 0 || robot.getX2() < 0 || robot.getY2() < 0 ||
                 robot.getX1() >= AREA_SIZE || robot.getX2() >= AREA_SIZE ||
                 robot.getY1() >= AREA_SIZE || robot.getY2() >= AREA_SIZE) {
             return true;
         }
 
+        // creates a Line2D representation of the robot
         Line2D line = new Line2D.Double(robot.getX1(), robot.getY1(), robot.getX2(), robot.getY2());
 
-        for(Rectangle2D obs : getAllRects()) {
-            if(obs.intersectsLine(line)) {
+        // checks for collisions with all the rectangles in the state
+        for (Rectangle2D obs : getAllRects()) {
+            if (obs.intersectsLine(line)) {
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Checks if the given box is colliding with anything else in the state
+     * @param box the box to check
+     * @return true if there is a collision, false otherwise
+     */
     public boolean isBoxCollision(Box box) {
-        if(box.getX() < 200 || box.getY() < 200 || box.getX() + box.getWidth() > AREA_SIZE - 200 ||
+        if (box.getX() < 200 || box.getY() < 200 || box.getX() + box.getWidth() > AREA_SIZE - 200 ||
                 box.getY() + box.getHeight() > AREA_SIZE - 200) {
             return true;
         }
 
-        for(MovingBox mBox : mBoxes) {
-            if(!box.equals(mBox) && mBox.getRect().intersects(box.getExpandedRect())) {
+        for (MovingBox mBox : mBoxes) {
+            if (!box.equals(mBox) && mBox.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
         }
-        for(MovingObstacle mObs : mObstacles) {
-            if(!box.equals(mObs) && mObs.getRect().intersects(box.getExpandedRect())) {
+        for (MovingObstacle mObs : mObstacles) {
+            if (!box.equals(mObs) && mObs.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
         }
-        for(StaticObstacle obs : sObstacles) {
-            if(!box.equals(obs) && obs.getRect().intersects(box.getExpandedRect())) {
+        for (StaticObstacle obs : sObstacles) {
+            if (!box.equals(obs) && obs.getRect().intersects(box.getExpandedRect())) {
                 return true;
             }
         }
@@ -334,9 +357,11 @@ public class State {
         for(MovingBox mBox : this.mBoxes) {
             mBoxes.add(mBox.copy());
         }
+
         for(MovingObstacle mObs : this.mObstacles) {
             mObstacles.add(mObs.copy());
         }
+
         for(StaticObstacle obs : this.sObstacles) {
             sObstacles.add(obs.copy());
         }
@@ -373,9 +398,15 @@ public class State {
                 other.robot.equals(robot);
     }
 
+    /**
+     * Checks if any of the boxes in the current state are close to those in the
+     * given state
+     * @param state the state to check
+     * @return true if there is a close box, false otherwise
+     */
     public boolean isCloseBox(State state) {
-        for(int i = 0; i < mBoxes.size(); i++) {
-            if(Math.abs(mBoxes.get(i).getX() - state.mBoxes.get(i).getX()) > CLOSE ||
+        for (int i = 0; i < mBoxes.size(); i++) {
+            if (Math.abs(mBoxes.get(i).getX() - state.mBoxes.get(i).getX()) > CLOSE ||
                     Math.abs(mBoxes.get(i).getY() - state.mBoxes.get(i).getY()) > CLOSE) {
                 return false;
             }
@@ -383,9 +414,15 @@ public class State {
         return true;
     }
 
+    /**
+     * Checks if any of the obstacles in the current state are close to those in
+     * the given state
+     * @param state the obstacle to check
+     * @return true if there is a close obstacle, false otherwise
+     */
     public boolean isCloseObs(State state) {
-        for(int i = 0; i < mObstacles.size(); i++) {
-            if(Math.abs(mObstacles.get(i).getX() - state.mObstacles.get(i).getX()) > CLOSE ||
+        for (int i = 0; i < mObstacles.size(); i++) {
+            if (Math.abs(mObstacles.get(i).getX() - state.mObstacles.get(i).getX()) > CLOSE ||
                     Math.abs(mObstacles.get(i).getY() - state.mObstacles.get(i).getY()) > CLOSE) {
                 return false;
             }
@@ -393,6 +430,11 @@ public class State {
         return true;
     }
 
+    /**
+     * Checks if the robot in the current state is close to that in the given state
+     * @param state the state to check against
+     * @return true if the robot is close, false otherwise
+     */
     public boolean isCloseRobot(State state) {
         return Math.abs(robot.getX() - state.robot.getX()) <= CLOSE &&
                 Math.abs(robot.getY() - state.robot.getY()) <= CLOSE &&
