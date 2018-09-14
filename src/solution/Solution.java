@@ -83,6 +83,16 @@ public class Solution {
         return path;
     }
 
+    private List<State> moveRobotInitial(State startState, BigDecimal rotation) {
+        State goalState = startState.saveState();
+        goalState.robot.setAngle(rotation);
+
+        List<State> movements = State.interimStates(startState, goalState);
+
+        startState.robot.setAngle(rotation);
+        return movements;
+    }
+
     private List<State> getAllBoxStates(State startState) {
         State goalState = startState.saveState();
         State prevState = startState.saveState();
@@ -173,7 +183,7 @@ public class Solution {
     }
 
     private List<State> generateStates(State startState) {
-        List<State> path = new ArrayList<>();
+        List<State> path = moveRobotInitial(startState, BigDecimal.ZERO);
         List<State> boxStates = getAllBoxStates(startState);
 
         Util.Side side = null;
