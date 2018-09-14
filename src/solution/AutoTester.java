@@ -1,5 +1,6 @@
 package solution;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import problem.ProblemSpec;
@@ -10,10 +11,10 @@ import tester.Tester;
  * Automatically runs tests on the solution to determine statistics.
  */
 public class AutoTester {
-    // amount of collisions that have occurs
-    private int collisions = 0;
     // amount of times the solution has been run
     private int runs = 0;
+    // amount of times the solution runs without errors
+    private int successes = 0;
     // amount of time each run has taken to solve
     private List<Long> durations = new ArrayList<>();
 
@@ -24,6 +25,8 @@ public class AutoTester {
      * @param output The output solution file.
      */
     private void testSolution(String input, String output) {
+        successes++;
+
         // Load the problem & solution
         ProblemSpec problemSpec = Solution.loadProblem(input);
         Solution solution = new Solution(problemSpec);
@@ -39,10 +42,8 @@ public class AutoTester {
 
         problemSpec = Solution.loadProblem(input, output);
         Tester tester = new Tester(problemSpec);
+        tester.testSolution();
 
-        if (!tester.testCollision()) {
-            collisions++;
-        }
         runs++;
     }
 
@@ -52,8 +53,28 @@ public class AutoTester {
     public static void main(String[] args) {
         AutoTester autoTester = new AutoTester();
 
-        for (int i = 0; i < 20; i++) {
-            autoTester.testSolution("problems/inputK.txt", "solutions/k" + i + ".txt");
+        List<String> problems = new ArrayList<>();
+        problems.add("case5.in");
+        problems.add("case6.in");
+        problems.add("case7.in");
+        problems.add("caseTestMoveObstacle.in");
+
+        File dir = new File("problems/tom");
+        File[] directoryListing = dir.listFiles();
+        if (directoryListing != null) {
+            for (File child : directoryListing) {
+                if (problems.contains(child.getName())) {
+                    continue;
+                }
+                System.out.println("Testing " + child.getName());
+                try {
+                    autoTester.testSolution(child.getPath(),
+                            "solutions/tom/" + child.getName() + ".out");
+                } catch (Exception e) {
+                    System.out.println("Failed: " + e.toString());
+                }
+                System.out.println();
+            }
         }
 
         System.out.println("AutoTester Report\n");
@@ -64,10 +85,7 @@ public class AutoTester {
         }
 
         System.out.println();
-        System.out.println("Collisions: " + autoTester.collisions);
+        System.out.println("Successful Executions: " + autoTester.successes);
         System.out.println("Executions: " + autoTester.runs);
-
-        double errorRate = (double) autoTester.collisions / (double) autoTester.runs;
-        System.out.println("Failure Percent: " + errorRate * 100);
     }
 }
