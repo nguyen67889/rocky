@@ -106,7 +106,7 @@ public class Solution {
                 if(loop > boxIndexes.size()) { //previous attempt didn't work -> remove it and try again
                     states.remove(states.size() - 1);
                 }
-                if(prevState.mObstacles.size() == 0) { //there are actually no moveable obstacles -> give up
+                if(prevState.mObstacles.size() == 0) { //there are actually no movable obstacles -> give up
                     throw new RuntimeException("it broke :'(");
                 }
                 int index = ThreadLocalRandom.current().nextInt(prevState.mObstacles.size());
@@ -118,7 +118,7 @@ public class Solution {
             List<State> boxStates = getBoxStates(prevState, i);
 
             if(boxStates != null) {
-                if(loop >= boxIndexes.size()) { //omg we tried something and it worked!
+                if(loop >= boxIndexes.size() + 1) { //omg we tried something and it worked!
                     int obsIndex = -prevState.current - 1;
                     states.remove(states.size() - 1);
                     List<Node<State>> nodes = new StateGraph(new Node<>(states.get(states.size() - 1)),
@@ -280,6 +280,7 @@ public class Solution {
             input.write(output);
             input.flush();
         } catch (IOException e) {
+            e.printStackTrace();
             System.err.println("FileIO Error: could not output solution file");
             System.exit(4);
         }
