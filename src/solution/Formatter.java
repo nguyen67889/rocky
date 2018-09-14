@@ -6,6 +6,10 @@ import java.util.List;
 import solution.boxes.Movable;
 import solution.states.State;
 
+/**
+ * Handles converting information about Robots, Boxes, and States (moves made in
+ * the path), to String formats that can be written to a file
+ */
 public class Formatter {
 
     /**
