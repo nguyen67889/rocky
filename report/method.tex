@@ -28,3 +28,70 @@ A heuristic, h(n), is said to be admissible if it never overestimates the cost. 
 
 Since the algorithm is both complete (as stated in the previous point) and admissible, it is also considered optimal, and will return a minimum cost path whenever one exists.
 \end{itemize}
+
+\def\BState{\State\hskip-\ALG@thistlm}
+
+\begin{algorithm}
+\caption{A*}\label{euclid}
+\begin{algorithmic}[1]
+\Procedure{A*}{}
+\State $\textit{open} \gets \text{empty }\textit{Set}$
+\State $\textit{closed} \gets \text{empty }\textit{Set}$
+
+\While{open.length $>$ 0}
+    \State $\textit{current} \gets \textit{null}$
+    \ForAll{node in open}
+        \If{current = null $|$ node.cost $<$ current.cost}
+            \State $\textit{current} \gets \text{node}$
+        \EndIf
+    \EndFor
+\EndWhile
+
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+
+%Algorithm: aStar() {
+%	Set open := new Set
+%	Set closed := new Set
+%	open.add(start)
+%
+%	while open.length > 0 {
+%		// assigns the Node in open with the smallest cost to current
+%		Node current := null
+%		for node in open {
+ %           if current == null || node.cost < current.cost {
+%	            current := node
+ %           }
+  %      }
+%
+%        // ends the algorithm early if a path has been found
+%        boolean isClose := current.isClose(goal)
+%        if isClose {
+%        	return current.path(start, goal)
+%        }
+%
+%        // mark current as visited
+%        open.remove(current)
+%        closed.add(current)
+
+%        for neighbour in current.neighbours {
+%	        int newCost := current.cost + getCost(current, neighbour)
+%
+%	        // reopens neighbour if a lower cost has been found
+%	        if newCost < neighbour.cost {
+%	        	neighbour.cost := newCost
+%	        	closed.remove(neighbour)
+%	        }
+%
+%	        if !closed.contains(neighbour) {
+%	        	open.add(neighbour)
+%	        }
+ %       }
+%	}
+
+%	// if a path is not found
+%	return null
+%}
+%\end{lstlisting}
