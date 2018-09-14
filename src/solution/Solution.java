@@ -244,7 +244,7 @@ public class Solution {
      * @param output The formatted solution.
      * @param outputFilename The filename to output the solution to.
      */
-    private static void writeSolution(String output, String outputFilename) {
+    public static void writeSolution(String output, String outputFilename) {
         try {
             BufferedWriter input = new BufferedWriter(
                     new FileWriter(outputFilename));
@@ -262,7 +262,7 @@ public class Solution {
      * @param problemFile Filename of the problem file.
      * @return A problem spec with no solution.
      */
-    private static ProblemSpec loadProblem(String problemFile) {
+    public static ProblemSpec loadProblem(String problemFile) {
         ProblemSpec problem = new ProblemSpec();
         try {
             problem.loadProblem(problemFile);
@@ -280,7 +280,7 @@ public class Solution {
      * @param solutionFile Filename of the solution file.
      * @return A problem spec wih a solution.
      */
-    private static ProblemSpec loadProblem(String problemFile, String solutionFile) {
+    public static ProblemSpec loadProblem(String problemFile, String solutionFile) {
         ProblemSpec problem = loadProblem(problemFile);
         try {
             problem.loadSolution(solutionFile);
