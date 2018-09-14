@@ -396,9 +396,9 @@ public class Tester {
 
     private boolean isCoincided(double m1, double m2, double n1, double n2) {
         if (m1 <= n1) {
-            return (m2 - n1 >= 0.75 * ps.getRobotWidth());
+            return (m2 - n1 >= 0.75 * ps.getRobotWidth() - MAX_ERROR);
         } else {
-            return (n2 - m1 >= 0.85 * ps.getRobotWidth());
+            return (n2 - m1 >= 0.75 * ps.getRobotWidth() - MAX_ERROR);
         }
     }
 
