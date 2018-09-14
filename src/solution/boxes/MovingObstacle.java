@@ -8,6 +8,8 @@ import solution.states.State;
  */
 public class MovingObstacle extends Movable {
 
+    protected static final int DIST = 100;
+
     /**
      * Creates a new MovingObstacle
      * @param x the bottom left x coordinate of the MovingObstacle

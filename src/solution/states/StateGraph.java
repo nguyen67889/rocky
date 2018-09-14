@@ -24,10 +24,6 @@ public class StateGraph {
         this.index = boxIndex;
     }
 
-    public StateGraph(Node<State> start, Node<State> goal) {
-        this(start, goal, GraphType.ALL, -1);
-    }
-
     private int cost(Node<State> start, Node<State> end) {
         //TODO modify to be better
         int cost = 0;

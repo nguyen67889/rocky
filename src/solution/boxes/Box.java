@@ -84,7 +84,7 @@ public abstract class Box {
     }
 
     /**
-     * Expands the Box by 300 on all sides
+     * Expands the Box by 200 on all sides
      * @return the expanded Rectangle2D object
      */
     public Rectangle2D getExpandedRect() {
