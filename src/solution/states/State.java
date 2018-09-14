@@ -212,6 +212,17 @@ public class State {
         return rects;
     }
 
+    public boolean isTransitionCollision(State prevState) {
+        for(int i = prevState.robot.getAngle().intValue(); i < robot.getAngle().intValue(); i += 5) {
+            State transition = saveState();
+            transition.robot.setAngle(BigDecimal.valueOf(i));
+            if(transition.isRobotCollision()) {
+                return true;
+            }
+        }
+        return isRobotCollision();
+    }
+
     public boolean isRobotCollision() {
         if(robot.getX1() < 0 || robot.getY1() < 0 || robot.getX2() < 0 || robot.getY2() < 0 ||
                 robot.getX1() >= AREA_SIZE || robot.getX2() >= AREA_SIZE ||

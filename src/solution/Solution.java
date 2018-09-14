@@ -163,8 +163,9 @@ public class Solution {
                 new Node<State>(goalState), StateGraph.GraphType.ROBOT, -1).aStar();
         List<State> path = new ArrayList<>();
 
-        for (int i = 0; i < nodes.size() - 1; i++) {
-            path.addAll(State.interimStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
+        for (int i = 0; i < nodes.size(); i++) {
+            //path.addAll(State.interimStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
+            path.add(nodes.get(i).getItem());
         }
 
         path.addAll(State.interimStates(path.get(path.size() - 1), goalState));
@@ -173,8 +174,10 @@ public class Solution {
     }
 
     private List<State> generateStates(State startState) {
+        System.out.println("Commencing generation");
         List<State> path = new ArrayList<>();
         List<State> boxStates = getAllBoxStates(startState);
+        System.out.println("Box generation complete");
 
         Util.Side side = null;
         int index = 0;
@@ -225,6 +228,8 @@ public class Solution {
             }
             path.add(currentState);
         }
+
+        System.out.println("All generation complete");
 
         return path;
     }

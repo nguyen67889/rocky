@@ -88,7 +88,7 @@ public abstract class Box {
      * @return the expanded Rectangle2D object
      */
     public Rectangle2D getExpandedRect() {
-        int expanded = 300;
+        int expanded = 200;
         return new Rectangle2D.Double(x - expanded, y - expanded,
                 width + 2 * expanded, height + 2 * expanded);
     }

@@ -64,12 +64,10 @@ public class StateGraph {
         s1.robot.rotateClockwise();
         State s2 = state.saveState();
         s2.robot.rotateAntiClockwise();
-        if (!s1.isRobotCollision() || (type == GraphType.BOXES && s1.isCloseBox(goal.getItem())) ||
-                (type == GraphType.OBSTACLES && s1.isCloseObs(goal.getItem()))) {
+        if (!s1.isTransitionCollision(state)) {
             states.add(s1);
         }
-        if (!s2.isRobotCollision() || (type == GraphType.BOXES && s2.isCloseBox(goal.getItem())) ||
-                (type == GraphType.OBSTACLES && s2.isCloseObs(goal.getItem()))) {
+        if (!s2.isTransitionCollision(state)) {
             states.add(s2);
         }
         return states;
@@ -85,24 +83,16 @@ public class StateGraph {
         s3.robot.moveLeft();
         State s4 = state.saveState();
         s4.robot.moveRight();
-        if (!s1.isRobotCollision() ||
-                (type == GraphType.BOXES && s1.isCloseBox(goal.getItem())) ||
-                (type == GraphType.OBSTACLES && s1.isCloseObs(goal.getItem()))) {
+        if (!s1.isRobotCollision()) {
             states.add(s1);
         }
-        if (!s2.isRobotCollision() ||
-                (type == GraphType.BOXES && s2.isCloseBox(goal.getItem())) ||
-                (type == GraphType.OBSTACLES && s2.isCloseObs(goal.getItem()))) {
+        if (!s2.isRobotCollision()) {
             states.add(s2);
         }
-        if (!s3.isRobotCollision() ||
-                (type == GraphType.BOXES && s3.isCloseBox(goal.getItem())) ||
-                (type == GraphType.OBSTACLES && s3.isCloseObs(goal.getItem()))) {
+        if (!s3.isRobotCollision()) {
             states.add(s3);
         }
-        if (!s4.isRobotCollision() ||
-                (type == GraphType.BOXES && s4.isCloseBox(goal.getItem())) ||
-                (type == GraphType.OBSTACLES && s4.isCloseObs(goal.getItem()))) {
+        if (!s4.isRobotCollision()) {
             states.add(s4);
         }
         return states;
