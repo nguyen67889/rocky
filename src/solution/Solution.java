@@ -54,103 +54,6 @@ public class Solution {
         return path;
     }
 
-    /*private List<State> refractorObsStates(List<State> states, List<MovingObstacle> obstacles) {
-        List<State> results = new ArrayList<>();
-        for(State state : states) {
-            int moving = state.current - 1;
-
-            State copy = state.saveState();
-            Set<Box> ignore = new HashSet<>();
-            ignore.add(copy.mBoxes.get(moving));
-            Movable box = (Movable)copy.getBoxCollision(copy.mBoxes.get(moving), ignore);
-            if(box != null) {
-                for(int x = box.getX(); x < State.AREA_SIZE - box.getWidth(); x += 10) {
-                    box.setX(x);
-                    if(copy.getBoxCollision(box, ignore) != null) {
-                        box.setX(x - 10);
-                    }
-                }
-
-                for(int x = box.getX(); x < 0; x -= 10) {
-                    box.setX(x);
-                    if(copy.getBoxCollision(box, ignore) != null) {
-                        box.setX(x + 10);
-                    }
-                }
-
-                for(int y = box.getY(); y < State.AREA_SIZE - box.getHeight(); y += 10) {
-                    box.setY(y);
-                    if(copy.getBoxCollision(box, ignore) != null) {
-                        box.setX(y - 10);
-                    }
-                }
-                for(int y = box.getY(); y < 0; y -= 10) {
-                    box.setX(y);
-                    if(copy.getBoxCollision(box, ignore) != null) {
-                        box.setX(y + 10);
-                    }
-                }
-            }
-            //check if state collision
-                //if collision:
-                //for(all directions:)
-                    //try to move as far as possible
-                    //if no collision break
-                //generate states for the chosen direction
-            //continue path
-        }
-    }*/
-
-    /*private List<State> getMovingBoxStates(State startState) {
-        State goalState = startState.saveState();
-        List<Node<State>> nodes = null;
-        while(nodes == null) {
-            int index = ThreadLocalRandom.current().nextInt(goalState.mObstacles.size());
-            MovingObstacle start = startState.mObstacles.get(index);
-            MovingObstacle obs = goalState.mObstacles.get(index);
-            obs.setX(-1);
-            obs.setY(-1);
-            while(goalState.isBoxCollision(obs) || startState.isCloseObs(goalState)) {
-                int deltaX = ThreadLocalRandom.current().nextInt(-50, 51)*10;
-                int deltaY = ThreadLocalRandom.current().nextInt(-50, 51)*10;
-                obs.setX(start.getX() + deltaX);
-                obs.setY(start.getY() + deltaY);
-            }
-
-            nodes = new StateGraph(new Node<>(startState), new Node<>(goalState),
-                    StateGraph.GraphType.OBSTACLES, index).aStar();
-        }
-
-        List<State> path = new ArrayList<>();
-        for (int i = 0; i < nodes.size() - 1; i++) {
-            path.addAll(State.interimBoxStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
-        }
-        path.addAll(State.interimBoxStates(path.get(path.size() - 1), goalState));
-
-        return path;
-    }*/
-
-    /*private List<State> refractorStates(List<State> states, List<MovingObstacle> obstacles) {
-        List<State> result = new ArrayList<>();
-        for(int i = 0; i < states.size(); i++) {
-            System.out.println("x");
-            State state = states.get(i);
-            state.mObstacles = new ArrayList<>(obstacles);
-            int moving = state.current - 1;
-            if(moving < 0) {
-                continue;
-            }
-            MovingBox movingBox = state.mBoxes.get(moving);
-            MovingObstacle collision = (MovingObstacle) state.getBoxCollision(movingBox, new HashSet<>());
-            if(collision != null) {
-                int index = obstacles.indexOf(collision);
-                result.addAll(getMovingObsStates(states.get(i - 1), index));
-            }
-            result.add(state);
-        }
-        return result;
-    }*/
-
     private State handleMovingObs(State startState, int index) {
         State goalState = startState.saveState();
         goalState.current = -index - 1;
@@ -173,11 +76,15 @@ public class Solution {
         return nodes.get(nodes.size() - 1).getItem();
     }
 
-    /*private List<State> handleMovingObstacles(State prevState) {
-        int index = ThreadLocalRandom.current().nextInt(prevState.mObstacles.size());
-        List<State> attempt = getMovingObsStates(prevState, index);
+    private List<State> moveRobotInitial(State startState, BigDecimal rotation) {
+        State goalState = startState.saveState();
+        goalState.robot.setAngle(rotation);
 
-    }*/
+        List<State> movements = State.interimStates(startState, goalState);
+
+        startState.robot.setAngle(rotation);
+        return movements;
+    }
 
     private List<State> getAllBoxStates(State startState) {
         State goalState = startState.saveState();
@@ -289,7 +196,7 @@ public class Solution {
 
     private List<State> generateStates(State startState) {
         System.out.println("Commencing generation");
-        List<State> path = new ArrayList<>();
+        List<State> path = moveRobotInitial(startState, BigDecimal.ZERO);
         List<State> boxStates = getAllBoxStates(startState);
         System.out.println("Box generation complete");
 
