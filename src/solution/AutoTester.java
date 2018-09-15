@@ -1,11 +1,16 @@
 package solution;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import problem.ProblemSpec;
 import solution.states.State;
 import tester.Tester;
+import visualiser.Visualiser;
 
 /**
  * Automatically runs tests on the solution to determine statistics.
@@ -15,8 +20,30 @@ public class AutoTester {
     private int runs = 0;
     // amount of times the solution runs without errors
     private int successes = 0;
+    // amount of times the solution passes all tests
+    private int passes = 0;
     // amount of time each run has taken to solve
-    private List<Long> durations = new ArrayList<>();
+    private Map<String, Long> durations = new HashMap<>();
+
+    /**
+     * Tests to see if a solution passes all the tests.
+     *
+     * @param solution The problem spec with a solution.
+     * @return Whether all tests pass or not
+     */
+    public boolean solutionPasses(ProblemSpec solution) {
+        Tester tester = new Tester(solution);
+
+        boolean pass = tester.testInitialFirst();
+        pass = tester.testStepSize() && pass;
+        pass = tester.testCollision() && pass;
+        pass = tester.testPushedBox() && pass;
+
+        int goals = solution.getMovingBoxEndPositions().size();
+        pass = tester.countGoals() == goals && pass;
+
+        return pass;
+    }
 
     /**
      * Work out a solution to an input and test the solution.
@@ -25,7 +52,7 @@ public class AutoTester {
      * @param output The output solution file.
      */
     private void testSolution(String input, String output) {
-        successes++;
+        runs++;
 
         // Load the problem & solution
         ProblemSpec problemSpec = Solution.loadProblem(input);
@@ -35,16 +62,17 @@ public class AutoTester {
         long startTime = System.currentTimeMillis();
         List<State> states = solution.solve();
         long endTime = System.currentTimeMillis();
-        durations.add(endTime - startTime);
+        durations.put(input, endTime - startTime);
 
         // Output the solution
         Solution.writeSolution(Formatter.format(states), output);
 
         problemSpec = Solution.loadProblem(input, output);
-        Tester tester = new Tester(problemSpec);
-        tester.testSolution();
+        if (solutionPasses(problemSpec)) {
+            passes++;
+        }
 
-        runs++;
+        successes++;
     }
 
     /**
@@ -59,7 +87,13 @@ public class AutoTester {
         problems.add("case7.in");
         problems.add("caseTestMoveObstacle.in");
 
-        File dir = new File("problems/tom");
+        String rootDir = "tom";
+
+        String problemDir = Paths.get("problems", rootDir).toString();
+        String solutionDir = Paths.get("solutions", rootDir).toString();
+
+
+        File dir = new File(problemDir);
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
@@ -67,11 +101,13 @@ public class AutoTester {
                     continue;
                 }
                 System.out.println("Testing " + child.getName());
+                String outputFile = solutionDir + child.getName() + ".out";
                 try {
-                    autoTester.testSolution(child.getPath(),
-                            "solutions/tom/" + child.getName() + ".out");
+                    autoTester.testSolution(child.getPath(), outputFile);
+//                    Visualiser.main(new String[]{child.getPath(), outputFile});
                 } catch (Exception e) {
                     System.out.println("Failed: " + e.toString());
+//                    Visualiser.main(new String[]{child.getPath()});
                 }
                 System.out.println();
             }
@@ -80,12 +116,13 @@ public class AutoTester {
         System.out.println("AutoTester Report\n");
 
         System.out.println("Durations");
-        for (int i = 0; i < autoTester.durations.size(); i++) {
-            System.out.println(i + ": " + (double) autoTester.durations.get(i) / 1000.0 + " seconds");
+        for (Entry<String, Long> duration : autoTester.durations.entrySet()) {
+            System.out.println(duration.getKey() + ": " + (double) duration.getValue() / 1000.0 + " seconds");
         }
 
         System.out.println();
-        System.out.println("Successful Executions: " + autoTester.successes);
+        System.out.println("No Error Runs: " + autoTester.successes);
+        System.out.println("Tester Pass Runs: " + autoTester.passes);
         System.out.println("Executions: " + autoTester.runs);
     }
 }
