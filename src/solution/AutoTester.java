@@ -25,9 +25,6 @@ public class AutoTester {
     // amount of time each run has taken to solve
     private Map<String, Long> durations = new HashMap<>();
 
-    // filenames that should be ignored when testing
-    private List<String> excluded = new ArrayList<>();
-
     /**
      * Tests to see if a solution passes all the tests.
      *
@@ -79,52 +76,35 @@ public class AutoTester {
     }
 
     /**
-     * Register a list of files to be ignored by the tester.
-     *
-     * @param excludedFiles List of filenames to ignore.
+     * Executes the AutoTester
      */
-    public void registerExcluded(List<String> excludedFiles) {
-        excluded.addAll(excludedFiles);
-    }
+    public static void main(String[] args) {
+        AutoTester autoTester = new AutoTester();
 
-    /**
-     * Register a file to be ignored by the tester.
-     *
-     * @param excludedFile Filename to ignore.
-     */
-    public void registerExcluded(String excludedFile) {
-        excluded.add(excludedFile);
-    }
+        List<String> problems = new ArrayList<>();
+        problems.add("case5.in");
+        problems.add("case6.in");
+        problems.add("case7.in");
+        problems.add("caseTestMoveObstacle.in");
 
-    /**
-     * Test all the input files in a directory.
-     *
-     * @param problems A directory of input files.
-     * @param solutions A directory to store the output files.
-     */
-    public void testDirectory(String problems, String solutions) {
-        File dir = new File(problems);
+        String rootDir = "tom";
+
+        String problemDir = Paths.get("problems", rootDir).toString() + "/";
+        String solutionDir = Paths.get("solutions", rootDir).toString() + "/";
+
+
+        File dir = new File(problemDir);
         File[] directoryListing = dir.listFiles();
-
         if (directoryListing != null) {
             for (File child : directoryListing) {
-
-                if (child.isDirectory()) {
-                    testDirectory(child.getPath(),
-                            solutions + "/" + child.getName() + "/");
+                if (problems.contains(child.getName())) {
                     continue;
                 }
-
-                if (excluded.contains(child.getName())) {
-                    continue;
-                }
-
                 System.out.println("Testing " + child.getName());
                 String[] paths = child.getName().split("\\.");
-                String outputFile = solutions + paths[0] + ".out";
-
+                String outputFile = solutionDir + paths[0] + ".out";
                 try {
-                    testSolution(child.getPath(), outputFile);
+                    autoTester.testSolution(child.getPath(), outputFile);
 //                    Visualiser.main(new String[]{child.getPath(), outputFile});
                 } catch (Exception e) {
                     System.out.println("Failed: " + e.toString());
@@ -133,25 +113,6 @@ public class AutoTester {
                 System.out.println();
             }
         }
-    }
-
-    /**
-     * Executes the AutoTester
-     */
-    public static void main(String[] args) {
-        AutoTester autoTester = new AutoTester();
-
-        autoTester.registerExcluded("case5.in");
-        autoTester.registerExcluded("case6.in");
-        autoTester.registerExcluded("case7.in");
-        autoTester.registerExcluded("caseTestMoveObstacle.in");
-
-        String rootDir = "";
-
-        String problems = Paths.get("problems", rootDir).toString() + "/";
-        String solutions = Paths.get("solutions", rootDir).toString() + "/";
-
-        autoTester.testDirectory(problems, solutions);
 
         System.out.println("AutoTester Report\n");
 
