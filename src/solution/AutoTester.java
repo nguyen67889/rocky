@@ -58,6 +58,7 @@ public class AutoTester {
         problems.add("case6.in");
         problems.add("case7.in");
         problems.add("caseTestMoveObstacle.in");
+        problems.add("caseMaxStaticObstaclesError.in");
 
         File dir = new File("problems/tom");
         File[] directoryListing = dir.listFiles();

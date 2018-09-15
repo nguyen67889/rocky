@@ -76,6 +76,40 @@ public class Solution {
         return nodes.get(nodes.size() - 1).getItem();
     }
 
+    private List<State> moveObsForRobot(State startState, State goalState) {
+        if(startState.mObstacles.size() == 0) {
+            throw new NullPointerException("Cannot find path");
+        }
+        State copy = null;
+        List<Node<State>> nodes = null;
+        int count = 0;
+        while(nodes == null) {
+            if(count >= 100) {
+                return null;
+            }
+            copy = goalState.saveState();
+            int index = ThreadLocalRandom.current().nextInt(copy.mObstacles.size());
+            MovingObstacle obs = copy.mObstacles.get(index);
+            int x = ThreadLocalRandom.current().nextInt(0, 1000)*10;
+            int y = ThreadLocalRandom.current().nextInt(0, 1000)*10;
+            obs.setX(x);
+            obs.setY(y);
+            if(goalState.isBoxCollision(obs)) {
+                nodes = null;
+                continue;
+            }
+            nodes = new StateGraph(new Node<>(startState), new Node<>(goalState),
+                    StateGraph.GraphType.OBSTACLES, index).aStar();
+            count++;
+        }
+
+        List<State> path = new ArrayList<>();
+        for(int i = 0; i < nodes.size() - 1; i++) {
+            path.addAll(State.interimBoxStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
+        }
+        return path;
+    }
+
     private List<State> moveRobotInitial(State startState, BigDecimal rotation) {
         State goalState = startState.saveState();
         goalState.robot.setAngle(rotation);
@@ -99,6 +133,8 @@ public class Solution {
             goalState.mBoxes.get(i).setX(goalState.mBoxes.get(i).getXGoal());
             goalState.mBoxes.get(i).setY(goalState.mBoxes.get(i).getYGoal());
         }
+        Collections.shuffle(boxIndexes);
+        System.out.println(boxIndexes);
 
         int loop = 0;
         while(!boxIndexes.isEmpty()) {
@@ -107,10 +143,14 @@ public class Solution {
                     states.remove(states.size() - 1);
                 }
                 if(prevState.mObstacles.size() == 0) { //there are actually no movable obstacles -> give up
-                    throw new RuntimeException("it broke :'(");
+                    return getAllBoxStates(startState);
                 }
                 int index = ThreadLocalRandom.current().nextInt(prevState.mObstacles.size());
-                states.add(handleMovingObs(prevState, index)); //try something random
+                State tryState = handleMovingObs(prevState, index);//try something random
+                if(tryState == null) {
+                    return getAllBoxStates(startState);
+                }
+                states.add(tryState);
                 prevState = states.get(states.size() - 1);
             }
 
@@ -194,12 +234,8 @@ public class Solution {
         return path;
     }
 
-    private List<State> generateStates(State startState) {
-        System.out.println("Commencing generation");
-        List<State> path = moveRobotInitial(startState, BigDecimal.ZERO);
-        List<State> boxStates = getAllBoxStates(startState);
-        System.out.println("Box generation complete");
-
+    private List<State> stateGenerationHelper(State startState, List<State> initPath, List<State> boxStates) {
+        List<State> path = new ArrayList<>(initPath);
         Util.Side side = null;
         int index = 0;
 
@@ -214,7 +250,14 @@ public class Solution {
             if (currentState.dir != side || currentState.current != index) {
                 side = currentState.dir;
                 index = currentState.current;
-                path.addAll(robotStateToState(prevState, index, side));
+                try {
+                    path.addAll(robotStateToState(prevState, index, side));
+                } catch(NullPointerException ex) {
+                    System.out.println("Regenerating box path");
+                    return stateGenerationHelper(startState, initPath, getAllBoxStates(startState));
+                    //System.err.println("NPE caught - no robot path found");
+                    //return boxStates;
+                }
             }
 
             prevState = path.get(path.size() - 1);
@@ -256,6 +299,15 @@ public class Solution {
         System.out.println("All generation complete");
 
         return path;
+    }
+
+    private List<State> generateStates(State startState) {
+        System.out.println("Commencing generation");
+        List<State> path = moveRobotInitial(startState, BigDecimal.ZERO);
+        List<State> boxStates = getAllBoxStates(startState);
+        System.out.println("Box generation complete");
+
+        return stateGenerationHelper(startState, path, boxStates);
     }
 
     /**

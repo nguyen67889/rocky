@@ -327,17 +327,17 @@ public class State {
     public Box getBoxCollision(Box box, Set<Box> ignore) {
         ignore.add(box);
         for (MovingBox mBox : mBoxes) {
-            if (!ignore.contains(mBox) && mBox.getRect().intersects(box.getExpandedRect())) {
+            if (!ignore.contains(mBox) && mBox.getRect().intersects(box.getExpandedRect(dir))) {
                 return mBox;
             }
         }
         for (MovingObstacle mObs : mObstacles) {
-            if (!ignore.contains(mObs) && mObs.getRect().intersects(box.getExpandedRect())) {
+            if (!ignore.contains(mObs) && mObs.getRect().intersects(box.getExpandedRect(dir))) {
                 return mObs;
             }
         }
         for (StaticObstacle obs : sObstacles) {
-            if (!ignore.contains(obs) && obs.getRect().intersects(box.getExpandedRect())) {
+            if (!ignore.contains(obs) && obs.getRect().intersects(box.getExpandedRect(dir))) {
                 return obs;
             }
         }

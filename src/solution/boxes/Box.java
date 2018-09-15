@@ -1,5 +1,7 @@
 package solution.boxes;
 
+import solution.Util;
+
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -84,11 +86,29 @@ public abstract class Box {
     }
 
     /**
-     * Expands the Box by 200 on all sides
+     * Expands the Box by 200 on the opposite of the specified side
+     *
+     * @param expandSide the side the robot is pushing from
+     *                   null to expand on all sides
+     *
      * @return the expanded Rectangle2D object
      */
-    public Rectangle2D getExpandedRect() {
-        int expanded = 200;
+    public Rectangle2D getExpandedRect(Util.Side expandSide) {
+        int expanded = 100;
+        /*if(expandSide == null) {
+            return new Rectangle2D.Double(x - expanded, y - expanded,
+                    width + 2 * expanded, height + 2 * expanded);
+        }*/
+        /*switch(expandSide) {
+            case BOTTOM:
+                return new Rectangle2D.Double(x, y, width, height + 2 * expanded);
+            case LEFT:
+                return new Rectangle2D.Double(x, y, width + 2 * expanded, height);
+            case TOP:
+                return new Rectangle2D.Double(x, y - expanded, width, height);
+            case RIGHT:
+                return new Rectangle2D.Double(x - expanded, y, width, height);
+        }*/
         return new Rectangle2D.Double(x - expanded, y - expanded,
                 width + 2 * expanded, height + 2 * expanded);
     }
