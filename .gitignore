@@ -96,7 +96,7 @@ output/
 *.log
 *.lot
 *.fls
-*.out
+report/*.out
 *.toc
 *.fmt
 *.fot
