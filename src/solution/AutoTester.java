@@ -89,8 +89,8 @@ public class AutoTester {
 
         String rootDir = "tom";
 
-        String problemDir = Paths.get("problems", rootDir).toString() + "/";
-        String solutionDir = Paths.get("solutions", rootDir).toString() + "/";
+        String problemDir = Paths.get("problems", rootDir).toString();
+        String solutionDir = Paths.get("solutions", rootDir).toString();
 
 
         File dir = new File(problemDir);
@@ -101,8 +101,7 @@ public class AutoTester {
                     continue;
                 }
                 System.out.println("Testing " + child.getName());
-                String[] paths = child.getName().split("\\.");
-                String outputFile = solutionDir + paths[0] + ".out";
+                String outputFile = solutionDir + child.getName() + ".out";
                 try {
                     autoTester.testSolution(child.getPath(), outputFile);
 //                    Visualiser.main(new String[]{child.getPath(), outputFile});
