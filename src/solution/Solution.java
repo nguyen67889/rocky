@@ -1,6 +1,5 @@
 package solution;
 
-import java.awt.geom.Path2D;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,7 +9,6 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import problem.ProblemSpec;
-import solution.boxes.Box;
 import solution.boxes.Movable;
 import solution.boxes.MovingBox;
 import solution.boxes.MovingObstacle;
@@ -76,46 +74,23 @@ public class Solution {
         return nodes.get(nodes.size() - 1).getItem();
     }
 
-    private List<State> moveObsForRobot(State startState, State goalState) {
-        if(startState.mObstacles.size() == 0) {
-            throw new NullPointerException("Cannot find path");
-        }
-        State copy = null;
-        List<Node<State>> nodes = null;
-        int count = 0;
-        while(nodes == null) {
-            if(count >= 100) {
-                return null;
-            }
-            copy = goalState.saveState();
-            int index = ThreadLocalRandom.current().nextInt(copy.mObstacles.size());
-            MovingObstacle obs = copy.mObstacles.get(index);
-            int x = ThreadLocalRandom.current().nextInt(0, 1000)*10;
-            int y = ThreadLocalRandom.current().nextInt(0, 1000)*10;
-            obs.setX(x);
-            obs.setY(y);
-            if(goalState.isBoxCollision(obs)) {
-                nodes = null;
-                continue;
-            }
-            nodes = new StateGraph(new Node<>(startState), new Node<>(goalState),
-                    StateGraph.GraphType.OBSTACLES, index).aStar();
-            count++;
-        }
-
-        List<State> path = new ArrayList<>();
-        for(int i = 0; i < nodes.size() - 1; i++) {
-            path.addAll(State.interimBoxStates(nodes.get(i).getItem(), nodes.get(i + 1).getItem()));
-        }
-        return path;
-    }
-
+    /**
+     * Rotate the robot from the initial state to a given rotation.
+     * Generates all the states between to rotate the robot.
+     *
+     * @param startState The starting state.
+     * @param rotation The rotation of the robot.
+     * @return The states to rotate a robot.
+     */
     private List<State> moveRobotInitial(State startState, BigDecimal rotation) {
+        // make a goal state from the start state
         State goalState = startState.saveState();
         goalState.robot.setAngle(rotation);
 
+        // generate the interim states
         List<State> movements = State.interimStates(startState, goalState);
 
+        // actually rotate the robot
         startState.robot.setAngle(rotation);
         return movements;
     }

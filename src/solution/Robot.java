@@ -2,9 +2,12 @@ package solution;
 
 import java.math.BigDecimal;
 
+/**
+ * A robot at a given position and rotation.
+ */
 public class Robot {
-    public static final int DIST = 100;
-    public static final BigDecimal ANGLE = BigDecimal.valueOf(45);
+    private static final int DIST = 100;
+    private static final BigDecimal ANGLE = BigDecimal.valueOf(45);
 
     private int x;
     private int y;

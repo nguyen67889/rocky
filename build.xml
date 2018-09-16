@@ -1,4 +1,4 @@
-<project name="comp3702-a1" default="run" basedir=".">
+<project name="comp3702-a1" default="build" basedir=".">
     <description>
         AI Assignment One
     </description>
@@ -14,7 +14,7 @@
         <javac srcdir="${src}" destdir="${out}"/>
     </target>
 
-    <target name="jar" depends="compile"
+    <target name="build" depends="compile"
             description="generate the jar file">
 
         <mkdir dir="${dist}"/>
@@ -26,7 +26,7 @@
         </jar>
     </target>
 
-    <target name="run" depends="jar">
+    <target name="run" depends="build">
         <java jar="${dist}/a1.jar" fork="true">
             <arg value="problems/input1.txt"/>
             <arg value="problems/output1.txt"/>
@@ -35,5 +35,6 @@
 
     <target name="clean" description="clean up">
         <delete dir="${out}"/>
+        <delete file="${dist}/a1.jar"/>
     </target>
 </project>
