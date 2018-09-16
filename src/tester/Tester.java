@@ -502,6 +502,7 @@ public class Tester {
     public boolean hasCollision(RobotConfig r, List<Box> movingObjects) {
         Line2D robotLine = new Line2D.Double(getPoint1(r), getPoint2(r));
         Rectangle2D border = new Rectangle2D.Double(0,0,1,1);
+        border = grow(border,MAX_ERROR);
         for (StaticObstacle o: ps.getStaticObstacles()) {
             if (robotLine.intersects(grow(o.getRect(), -MAX_ERROR))) {
                 return false;
