@@ -7,10 +7,11 @@ report:
 	cd report/; pdflatex report.tex
 	cd report/; cp report.pdf ../dist/a1-comp3702-44354006-44394918-44341800.pdf
 
-bundle:
+bundle: report
 	mkdir -p ./dist/
 	cp logo.ico ./dist/favicon.ico
-	cd src/; zip -r ../dist/a1-comp3702-44354006-44394918-44341800.zip *
+	zip -r dist/a1-comp3702-44354006-44394918-44341800.zip src/*
+	zip -r dist/a1-comp3702-44354006-44394918-44341800.zip build.xml
 
 docs:
 	javadoc -sourcepath ./src -d ./docs -subpackages .;

@@ -4,7 +4,6 @@
     </description>
 
     <property name="src" location="src"/>
-    <property name="tests" location="tests"/>
     <property name="out" location="out"/>
     <property name="dist" location="dist"/>
     <property name="main" value="solution.Solution"/>
