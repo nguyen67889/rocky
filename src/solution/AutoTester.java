@@ -147,9 +147,26 @@ public class AutoTester {
         autoTester.registerExcluded("caseTestMoveObstacle.in");
         autoTester.registerExcluded("caseMaxStaticObstaclesError.in");
 
-        String rootDir = "tom";
+        autoTester.registerExcluded("narrow_exchange.txt");
+        autoTester.registerExcluded("exchange.txt");
+        autoTester.registerExcluded("easy_1_tmp.txt");
+        autoTester.registerExcluded("narrow_blocks_in_passage.txt");
 
-        String problems = Paths.get("problems", rootDir).toString() + "/";
+        autoTester.registerExcluded("2_rows_blocked.txt");
+
+        autoTester.registerExcluded("narrow_4.txt");
+        autoTester.registerExcluded("exchange_4t.txt");
+
+        autoTester.registerExcluded("8_blocks.txt");
+        autoTester.registerExcluded("blocked_maze.txt");
+        autoTester.registerExcluded("random_1.txt");
+
+        autoTester.registerExcluded("aisles_8_bots.txt");
+        autoTester.registerExcluded("clutter.txt");
+
+        String rootDir = "";
+
+        String problems = Paths.get("src/level_5", rootDir).toString() + "/";
         String solutions = Paths.get("solutions", rootDir).toString() + "/";
 
         autoTester.testDirectory(problems, solutions);
